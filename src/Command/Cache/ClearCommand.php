@@ -10,7 +10,7 @@ namespace Notamedia\ConsoleJedi\Command\Cache;
 use Bitrix\Main\Application;
 use Bitrix\Main\Data\Cache;
 use Bitrix\Main\Data\StaticHtmlCache;
-use Symfony\Component\Console\Command\Command;
+use Notamedia\ConsoleJedi\Command\BitrixCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Command for clear Bitrix cache.
  */
-class ClearCommand extends Command
+class ClearCommand extends BitrixCommand
 {
     /**
      * {@inheritdoc}
@@ -27,7 +27,7 @@ class ClearCommand extends Command
     {
         $this->setName('cache:clear')
             ->setDescription('Clear all cache')
-            ->addOption('dir', 'd', InputOption::VALUE_REQUIRED, 'Clear cache only for directory (relative from /' . BX_ROOT . '/cache/)')
+            ->addOption('dir', 'd', InputOption::VALUE_REQUIRED, 'Clear cache only for directory (relative from /bitrix/cache/)')
             ->addOption('tag', 't', InputOption::VALUE_REQUIRED, 'Clear cache by tag');
     }
 

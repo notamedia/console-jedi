@@ -7,14 +7,14 @@
 
 namespace Notamedia\ConsoleJedi\Command\Agents;
 
-use Symfony\Component\Console\Command\Command;
+use Notamedia\ConsoleJedi\Command\BitrixCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Installation configurations for run Agents on cron.
  */
-class OnCronCommand extends Command
+class OnCronCommand extends BitrixCommand
 {
     /**
      * {@inheritdoc}
