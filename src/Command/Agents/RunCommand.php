@@ -7,15 +7,11 @@
 
 namespace Notamedia\ConsoleJedi\Command\Agents;
 
-use Bitrix\Main\Config\Option;
 use Notamedia\ConsoleJedi\Command\BitrixCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * Installation configurations for run Agents on cron.
- */
-class OnCronCommand extends BitrixCommand
+class RunCommand extends BitrixCommand
 {
     /**
      * {@inheritdoc}
@@ -24,8 +20,8 @@ class OnCronCommand extends BitrixCommand
     {
         parent::configure();
 
-        $this->setName('agents:on-cron')
-            ->setDescription('Installation configurations for run Agents on cron');
+        $this->setName('agents:run')
+            ->setDescription('Runs execution of Agents');
     }
 
     /**
@@ -33,7 +29,13 @@ class OnCronCommand extends BitrixCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        Option::set('main', 'agents_use_crontab', 'N');
-        Option::set('main', 'check_agents', 'N');
+        @set_time_limit(0);
+        @ignore_user_abort(true);
+        define('CHK_EVENT', true);
+
+        \CAgent::CheckAgents();
+        define('BX_CRONTAB_SUPPORT', true);
+        define('BX_CRONTAB', true);
+        \CEvent::CheckEvents();
     }
 }

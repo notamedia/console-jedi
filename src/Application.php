@@ -7,8 +7,8 @@
 
 namespace Notamedia\ConsoleJedi;
 
-use Notamedia\ConsoleJedi\Command\Agents\OnCronCommand;
-use Notamedia\ConsoleJedi\Command\Cache\ClearCommand;
+use Notamedia\ConsoleJedi\Command\Agents;
+use Notamedia\ConsoleJedi\Command\Cache;
 
 class Application extends \Symfony\Component\Console\Application
 {
@@ -21,8 +21,9 @@ class Application extends \Symfony\Component\Console\Application
         $this->autoload();
 
         $this->addCommands([
-            new OnCronCommand(),
-            new ClearCommand()
+            new Agents\OnCronCommand(),
+            new Agents\RunCommand(),
+            new Cache\ClearCommand()
         ]);
     }
 
