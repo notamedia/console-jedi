@@ -7,13 +7,11 @@
 
 namespace Notamedia\ConsoleJedi\Command;
 
-use Symfony\Component\Console\Command\Command;
-
 class BitrixCommand extends Command
 {
     public function isEnabled()
     {
-        if ($this->getApplication()->isBitrixLoaded())
+        if ($this->getApplication()->getBitrixStatus())
         {
             return true;
         }
