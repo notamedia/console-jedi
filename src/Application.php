@@ -8,6 +8,10 @@
 namespace Notamedia\ConsoleJedi;
 
 use Bitrix\Main\DB\ConnectionException;
+use Bitrix\Main\IO\Directory;
+use Bitrix\Main\IO\File;
+use Bitrix\Main\Loader;
+use Bitrix\Main\ModuleManager;
 use Notamedia\ConsoleJedi\Command\Agents;
 use Notamedia\ConsoleJedi\Command\Cache;
 use Notamedia\ConsoleJedi\Command\Environment;
@@ -35,6 +39,11 @@ class Application extends \Symfony\Component\Console\Application
         $this->initializeBitrix();
         
         parent::__construct('Console Jedi', static::VERSION);
+        
+        if ($this->getBitrixStatus() && $moduleCommands = $this->getModulesCommands())
+        {
+            $this->addCommands($moduleCommands);
+        }
     }
     
     protected function configure()
@@ -58,6 +67,45 @@ class Application extends \Symfony\Component\Console\Application
             new Cache\ClearCommand(),
             new Environment\InitCommand()
         ]);
+    }
+    
+    protected function getModulesCommands()
+    {
+        $commands = [];
+                
+        foreach (ModuleManager::getInstalledModules() as $module)
+        {
+            $moduleBitrixDir = $this->documentRoot . BX_ROOT . '/modules/' . $module['ID'];
+            $moduleLocalDir = $this->documentRoot . '/local/modules/' . $module['ID'];
+            $cliFile = '/cli.php';
+            
+            if (File::isFileExists($moduleBitrixDir . $cliFile))
+            {
+                $cliFile = $moduleBitrixDir . $cliFile;
+            }
+            elseif (File::isFileExists($moduleLocalDir . $cliFile))
+            {
+                $cliFile = $moduleLocalDir . $cliFile;
+            }
+            else
+            {
+                continue;
+            }
+            
+            if (!Loader::includeModule($module['ID']))
+            {
+                continue;
+            }
+                
+            $config = include_once $cliFile;
+
+            if (isset($config['commands']) && is_array($config['commands']))
+            {
+                $commands = array_merge($commands, $config['commands']);
+            }
+        }
+        
+        return !empty($commands) ? $commands : null;
     }
 
     public function initializeBitrix()
