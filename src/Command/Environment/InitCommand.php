@@ -1,8 +1,7 @@
 <?php
 /**
- * @link https://github.com/notamedia/console-jedi
- * @copyright Copyright © 2016 Notamedia Ltd.
- * @license MIT
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
  */
 
 namespace Notamedia\ConsoleJedi\Command\Environment;
@@ -20,6 +19,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Filesystem\Filesystem;
 
 class InitCommand extends Command
 {
@@ -35,6 +35,10 @@ class InitCommand extends Command
      * @var array
      */
     protected $bootstrap = ['copyFiles'];
+    /**
+     * @var array
+     */
+    protected $excludedFiles = ['config.php'];
 
     /**
      * {@inheritdoc}
@@ -132,14 +136,40 @@ class InitCommand extends Command
     }
 
     /**
-     * Copy files from the environment directory to application.
+     * Copy files and directories from the environment directory to application.
      *
      * @param InputInterface $input
      * @param OutputInterface $output
      */
     protected function copyFiles(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('<comment>Copy files from the environment directory to application.</comment>');
+        $output->writeln('<comment>Copy files from the environment directory</comment>');
+
+        $fs = new Filesystem();
+
+        $directoryIterator = new \RecursiveDirectoryIterator($this->dir, \RecursiveDirectoryIterator::SKIP_DOTS);
+        $iterator = new \RecursiveIteratorIterator($directoryIterator, \RecursiveIteratorIterator::SELF_FIRST);
+        
+        foreach ($iterator as $item)
+        {
+            if (in_array($iterator->getSubPathName(), $this->excludedFiles))
+            {
+                continue;
+            }
+            
+            $itemPath = $this->getApplication()->getRoot() . '/' . $iterator->getSubPathName();
+            
+            if ($item->isDir())
+            {
+                $fs->mkdir($itemPath);
+            }
+            else
+            {
+                $fs->copy($item, $itemPath, true);
+            }
+
+            $output->writeln('   ' . $itemPath);
+        }
     }
 
     /**

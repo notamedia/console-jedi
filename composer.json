@@ -10,7 +10,8 @@
   },
   "require": {
     "php": ">=5.4",
-    "symfony/console": "~2.8"
+    "symfony/console": "~2.8",
+    "symfony/filesystem": "~2.8"
   },
   "autoload": {
     "psr-4": {"Notamedia\\ConsoleJedi\\": "src/"}

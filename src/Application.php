@@ -1,14 +1,12 @@
 <?php
 /**
- * @link https://github.com/notamedia/console-jedi
- * @copyright Copyright © 2016 Notamedia Ltd.
- * @license MIT
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
  */
 
 namespace Notamedia\ConsoleJedi;
 
 use Bitrix\Main\DB\ConnectionException;
-use Bitrix\Main\IO\Directory;
 use Bitrix\Main\IO\File;
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
@@ -71,6 +69,7 @@ class Application extends \Symfony\Component\Console\Application
     
     protected function getModulesCommands()
     {
+        return [];
         $commands = [];
                 
         foreach (ModuleManager::getInstalledModules() as $module)
