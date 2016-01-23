@@ -14,15 +14,27 @@ use Notamedia\ConsoleJedi\Command\Agents;
 use Notamedia\ConsoleJedi\Command\Cache;
 use Notamedia\ConsoleJedi\Command\Environment;
 
+/**
+ * Console Jedi application.
+ */
 class Application extends \Symfony\Component\Console\Application
 {
+    /**
+     * Version of the Console Jedi application.
+     */
     const VERSION = '1.0.0';
-    
+    /**
+     * Bitrix is unavailable.
+     */
     const BITRIX_STATUS_UNAVAILABLE = 0;
-    
-    const BITRIX_STATUS_NO_DB_CONNECTION = 10;
-    
-    const BITRIX_STATUS_COMPLETE = 20;
+    /**
+     * Bitrix is available, but not have connection to DB.
+     */
+    const BITRIX_STATUS_NO_DB_CONNECTION = 5;
+    /**
+     * Bitrix is available.
+     */
+    const BITRIX_STATUS_COMPLETE = 10;
     
     protected $bitrixStatus = Application::BITRIX_STATUS_UNAVAILABLE;
     
@@ -33,7 +45,11 @@ class Application extends \Symfony\Component\Console\Application
      */
     public function __construct()
     {
-        $this->configure();        
+        if (isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0)
+        {
+            $this->documentRoot = $_SERVER['DOCUMENT_ROOT'];
+        }
+        
         $this->initializeBitrix();
         
         parent::__construct('Console Jedi', static::VERSION);
@@ -44,14 +60,6 @@ class Application extends \Symfony\Component\Console\Application
         }
     }
     
-    protected function configure()
-    {
-        if (isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0)
-        {
-            $this->documentRoot = $_SERVER['DOCUMENT_ROOT'];
-        }
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -66,7 +74,14 @@ class Application extends \Symfony\Component\Console\Application
             new Environment\InitCommand()
         ]);
     }
-    
+
+    /**
+     * Gets console commands from modules.
+     * 
+     * @return array|null
+     * 
+     * @throws \Bitrix\Main\LoaderException
+     */
     protected function getModulesCommands()
     {
         return [];
@@ -107,6 +122,11 @@ class Application extends \Symfony\Component\Console\Application
         return !empty($commands) ? $commands : null;
     }
 
+    /**
+     * Initialize kernel of Bitrix.
+     * 
+     * @return int The status of readiness kernel.
+     */
     public function initializeBitrix()
     {
         if (!$this->checkBitrix())
@@ -133,7 +153,12 @@ class Application extends \Symfony\Component\Console\Application
         
         return $this->bitrixStatus;
     }
-    
+
+    /**
+     * Checks readiness of Bitrix for kernel initialize.
+     * 
+     * @return bool
+     */
     public function checkBitrix()
     {
         if (
@@ -147,11 +172,21 @@ class Application extends \Symfony\Component\Console\Application
         return true;
     }
 
+    /**
+     * Gets Bitrix status.
+     * 
+     * @return int Value of constant `Application::BITRIX_STATUS_*`.
+     */
     public function getBitrixStatus()
     {
         return $this->bitrixStatus;
     }
-    
+
+    /**
+     * Gets root directory from which are running Console Jedi.
+     * 
+     * @return string
+     */
     public function getRoot()
     {
         return getcwd();
