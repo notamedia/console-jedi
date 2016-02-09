@@ -1,7 +1,11 @@
 {
   "name": "notamedia/console-jedi",
   "description": "Console application for CMS Bitrix",
-  "keywords": ["bitrix", "console", "application"],
+  "keywords": [
+    "bitrix",
+    "console",
+    "application"
+  ],
   "type": "library",
   "license": "MIT",
   "support": {
@@ -14,6 +18,11 @@
     "symfony/filesystem": "~2.8"
   },
   "autoload": {
-    "psr-4": {"Notamedia\\ConsoleJedi\\": "src/"}
-  }
+    "psr-4": {
+      "Notamedia\\ConsoleJedi\\": "src/"
+    }
+  },
+  "bin": [
+    "bin/console-jedi"
+  ]
 }

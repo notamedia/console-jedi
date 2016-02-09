@@ -13,6 +13,7 @@ use Bitrix\Main\ModuleManager;
 use Notamedia\ConsoleJedi\Command\Agents;
 use Notamedia\ConsoleJedi\Command\Cache;
 use Notamedia\ConsoleJedi\Command\Environment;
+use Notamedia\ConsoleJedi\Command\InitCommand;
 
 /**
  * Console Jedi application.
@@ -68,6 +69,7 @@ class Application extends \Symfony\Component\Console\Application
         $commands = parent::getDefaultCommands();
         
         return array_merge($commands, [
+            new InitCommand(),
             new Agents\OnCronCommand(),
             new Agents\RunCommand(),
             new Cache\ClearCommand(),
