@@ -14,6 +14,8 @@ use Notamedia\ConsoleJedi\Command\Agents;
 use Notamedia\ConsoleJedi\Command\Cache;
 use Notamedia\ConsoleJedi\Command\Environment;
 use Notamedia\ConsoleJedi\Command\InitCommand;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Console Jedi application.
@@ -44,23 +46,31 @@ class Application extends \Symfony\Component\Console\Application
     /**
      * {@inheritdoc}
      */
-    public function __construct()
+    public function __construct($webDir = null)
     {
-        if (isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0)
+        if ($webDir)
         {
-            $this->documentRoot = $_SERVER['DOCUMENT_ROOT'];
+            $this->documentRoot = $_SERVER['DOCUMENT_ROOT'] = $this->getRoot() . '/' . $webDir;
         }
         
-        $this->initializeBitrix();
-        
         parent::__construct('Console Jedi', static::VERSION);
-        
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function run(InputInterface $input = null, OutputInterface $output = null)
+    {
+        $this->initializeBitrix();
+
         if ($this->getBitrixStatus() && $moduleCommands = $this->getModulesCommands())
         {
             $this->addCommands($moduleCommands);
         }
+        
+        return parent::run($input, $output);
     }
-    
+
     /**
      * {@inheritdoc}
      */

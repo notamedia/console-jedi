@@ -23,6 +23,6 @@
     }
   },
   "bin": [
-    "bin/console-jedi"
+    "bin/jedi"
   ]
 }

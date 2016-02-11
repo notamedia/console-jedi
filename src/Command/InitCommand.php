@@ -6,11 +6,11 @@
 
 namespace Notamedia\ConsoleJedi\Command;
 
-use Symfony\Component\Console\Helper\DialogHelper;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 
 class InitCommand extends Command
 {
@@ -28,70 +28,41 @@ class InitCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /**
-         * @var QuestionHelper $question
-         */
-        $questionHelper = $this->getHelper('question');
-                
-        $question = new ConfirmationQuestion(
-            '<question>Create a directories for environment settings?</question> [Y/n]', 
-            true, 
-            '/^(y|j)/i'
-        );
-
-        if ($questionHelper->ask($input, $output, $question)) {
-            $this->createEnvironmentDir($input, $output);
-        }
-
-        $question = new ConfirmationQuestion(
-            '<question>Create file for run Console Jedi application?</question> [Y/n]',
-            true,
-            '/^(y|j)/i'
-        );
-
-        if ($questionHelper->ask($input, $output, $question)) {
-            $this->createApplicationFile($input, $output);
-        }
+        $this->createEnvironmentDir($input, $output);
+        $this->createApplicationFile($input, $output);
     }
     
     protected function createEnvironmentDir(InputInterface $input, OutputInterface $output)
     {
-        
+        /**
+         * @var QuestionHelper $question
+         */
+        $questionHelper = $this->getHelper('question');
+
+        $question = new ConfirmationQuestion(
+            'Create a directories for environment settings? [Y/n]',
+            true,
+            '/^(y|j)/i'
+        );
+
+        if ($questionHelper->ask($input, $output, $question))
+        {
+            
+        }
     }
     
     protected function createApplicationFile(InputInterface $input, OutputInterface $output)
     {
         /**
-         * @var DialogHelper $dialogHelper
+         * @var QuestionHelper $question
          */
-        $dialogHelper = $this->getHelper('dialog');
+        $questionHelper = $this->getHelper('question');
         
-        $path = getcwd() . '/jedi';
+        $path = $this->getApplication()->getRoot() . '/jedi';
+        $question = new Question('Enter path for creating file for run Console Jedi application::' . PHP_EOL
+            . '  Default path: <info>' . $path . '</info>' . PHP_EOL, $path);
 
-        $pathAnswer = $dialogHelper->select(
-            $output,
-            'Create application file in ' . $path,
-            ['Yes', 'Another path', 'Cancel'],
-            0
-        );
-
-        if ($pathAnswer === '1' || $pathAnswer == 0)
-        {
-            $path = $dialogHelper->askAndValidate(
-                $output,
-                'Enter the path to file: ',
-                function ($answer) {
-                    if (!$answer) {
-                        throw new \RuntimeException(
-                            'Path "' . $answer . '" is invalid"'
-                        );
-                    }
-
-                    return $answer;
-                }
-            );
-            
-            echo 'CREATED';
-        }
+        $path = $questionHelper->ask($input, $output, $question);
+        echo $path;
     }
 }
