@@ -1,0 +1,7 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '%vendor-dir%/autoload.php';
+
+$app = new \Notamedia\ConsoleJedi\Console\Application('%web-dir%');
+$app->run();
