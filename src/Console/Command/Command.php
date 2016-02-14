@@ -4,14 +4,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Command;
+namespace Notamedia\ConsoleJedi\Console\Command;
 
-use Notamedia\ConsoleJedi\Application;
+use Notamedia\ConsoleJedi\Console\Application;
 
 class Command extends \Symfony\Component\Console\Command\Command
 {
     /**
-     * @return Application
+     * @return \Notamedia\ConsoleJedi\Console\Application
      */
     public function getApplication()
     {

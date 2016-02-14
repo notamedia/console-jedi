@@ -4,16 +4,16 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi;
+namespace Notamedia\ConsoleJedi\Console;
 
 use Bitrix\Main\DB\ConnectionException;
 use Bitrix\Main\IO\File;
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
-use Notamedia\ConsoleJedi\Command\Agents;
-use Notamedia\ConsoleJedi\Command\Cache;
-use Notamedia\ConsoleJedi\Command\Environment;
-use Notamedia\ConsoleJedi\Command\InitCommand;
+use Notamedia\ConsoleJedi\Console\Command\Agents;
+use Notamedia\ConsoleJedi\Console\Command\Cache;
+use Notamedia\ConsoleJedi\Console\Command\Environment;
+use Notamedia\ConsoleJedi\Console\Command\InitCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 

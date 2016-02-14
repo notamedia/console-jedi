@@ -4,7 +4,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Command;
+namespace Notamedia\ConsoleJedi\Console\Command;
 
 class BitrixCommand extends Command
 {

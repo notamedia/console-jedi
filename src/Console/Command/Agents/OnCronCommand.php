@@ -4,10 +4,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Command\Agents;
+namespace Notamedia\ConsoleJedi\Console\Command\Agents;
 
 use Bitrix\Main\Config\Option;
-use Notamedia\ConsoleJedi\Command\BitrixCommand;
+use Notamedia\ConsoleJedi\Console\Command\BitrixCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 

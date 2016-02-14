@@ -4,12 +4,12 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Command\Cache;
+namespace Notamedia\ConsoleJedi\Console\Command\Cache;
 
 use Bitrix\Main\Application;
 use Bitrix\Main\Data\Cache;
 use Bitrix\Main\Data\StaticHtmlCache;
-use Notamedia\ConsoleJedi\Command\BitrixCommand;
+use Notamedia\ConsoleJedi\Console\Command\BitrixCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
