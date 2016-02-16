@@ -10,13 +10,17 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Filesystem\Filesystem;
 
 class InitCommand extends Command
 {
     protected $tmplDir = __DIR__ . '/../../../tmpl';
-    
+    /**
+     * @var QuestionHelper $question
+     */
+    protected $questionHelper;
+
     /**
      * {@inheritdoc}
      */
@@ -30,37 +34,60 @@ class InitCommand extends Command
     /**
      * {@inheritdoc}
      */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        $this->questionHelper = $this->getHelper('question');
+        
+        parent::initialize($input, $output);
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $output->writeln('<comment>This command must be run from root directory of project</comment>');
+        
+        $question = new ConfirmationQuestion(
+            '' . getcwd() . ' - is root directory of project? [Y/n] ',
+            true,
+            '/^(y|j)/i'
+        );
+
+        if (!$this->questionHelper->ask($input, $output, $question))
+        {
+            $output->writeln('<info>Run this command from root directory of project</info>');
+            return;
+        }
+        
+        $output->writeln('<info>Install Console Jedi application</info>');
+        
         $this->createEnvironmentsDir($input, $output);
         $this->createApplicationFile($input, $output);
     }
     
     protected function createEnvironmentsDir(InputInterface $input, OutputInterface $output)
     {
-        $targetDir = getcwd() . '/environments2';
+        $targetDir = getcwd() . '/environments';
         $tmplDir = $this->tmplDir . '/environments';
         
-        /**
-         * @var QuestionHelper $question
-         */
-        $questionHelper = $this->getHelper('question');
-        $question = new Question(
-            'Enter path for creating directories for the environment settings:' . PHP_EOL
-            . '  Default path: <info>' . $targetDir . '</info>' . PHP_EOL,
-            $targetDir
-        );
-        $question->setValidator(function ($answer) use ($input) {
-            if (is_dir($answer) && !$input->getOption('force')) {
-                throw new \RuntimeException(
-                    'Directory "' . $answer . '" already exist'
-                );
-            }
-            return $answer;
-        });
-
-        $targetDir = $questionHelper->ask($input, $output, $question);
+        $output->writeln('  - Environment settings');
         
+        if (file_exists($targetDir))
+        {
+            $question = new ConfirmationQuestion(
+                '    <error>Directory ' . $targetDir . ' already exists</error>' . PHP_EOL 
+                . '    <info>Overwrite? [Y/n]</info> ',
+                true,
+                '/^(y|j)/i'
+            );
+            
+            if (!$this->questionHelper->ask($input, $output, $question))
+            {
+                return;
+            }
+        }
+                
         $fs = new Filesystem();
         $tmplIterator = new \RecursiveDirectoryIterator($tmplDir, \RecursiveDirectoryIterator::SKIP_DOTS);
         $iterator = new \RecursiveIteratorIterator($tmplIterator, \RecursiveIteratorIterator::SELF_FIRST);
@@ -84,26 +111,23 @@ class InitCommand extends Command
     {
         $path = $this->getApplication()->getRoot() . '/jedi';
 
-        /**
-         * @var QuestionHelper $question
-         */
-        $questionHelper = $this->getHelper('question');
-        $question = new Question(
-            'Enter path for creating file for run Console Jedi application:' . PHP_EOL
-                . '  Default path: <info>' . $path . '</info>' . PHP_EOL, 
-            $path
-        );
-        $question->setValidator(function ($answer) use ($input) {
-            if (file_exists($answer) && !$input->getOption('force')) {
-                throw new \RuntimeException(
-                    'File "' . $answer . '" already exist'
-                );
+        $output->writeln('  - Application');
+
+        if (file_exists($path))
+        {
+            $question = new ConfirmationQuestion(
+                '    <error>File ' . $path . ' already exists</error>' . PHP_EOL
+                . '    <info>Overwrite? [Y/n]</info> ',
+                true,
+                '/^(y|j)/i'
+            );
+
+            if (!$this->questionHelper->ask($input, $output, $question))
+            {
+                return;
             }
-            return $answer;
-        });
-
-        $path = $questionHelper->ask($input, $output, $question);
-
+        }
+        
         $fs = new Filesystem();
 
         $content = file_get_contents($this->tmplDir . '/jedi');
