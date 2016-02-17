@@ -65,11 +65,13 @@ trait AgentTrait
     /**
      * Gets agent name for queue of Bitrix.
      * 
+     * @param array $constructorArgs Arguments for class `__constructor()`.
+     * 
      * @return string
      */
-    public static function getAgentName()
+    public static function getAgentName($constructorArgs)
     {
-        return '\\' . get_called_class() . '::agent(' . func_get_args(). ');';
+        return '\\' . get_called_class() . '::agent(' . implode(', ', $constructorArgs). ');';
     }
 
     /**
