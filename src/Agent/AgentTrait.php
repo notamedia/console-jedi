@@ -58,12 +58,12 @@ trait AgentTrait
     /**
      * Gets agent name for queue of Bitrix.
      * 
-     * @param string $extraCall String with the call any method from Agent class.
+     * @param array $callChain Array with the call any methods from Agent class.
      * 
      * @return string
      */
-    public function getAgentName($extraCall = null)
+    public function getAgentName(array $callChain = [])
     {
-        return AgentQueue::getAgentName(get_called_class(), static::$constructorArgs, $extraCall);
+        return AgentHelper::getAgentName(get_called_class(), static::$constructorArgs, $callChain);
     }
 }
