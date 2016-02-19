@@ -14,9 +14,25 @@ class AgentQueue
     /**
      * Adds new agent to the queue.
      * 
+     * Example:
+     * ```php
+     * use Notamedia\ConsoleJedi\Agent\AgentQueue;
+     * use Project\Module\DemoAgent;
+     * 
+     * AgentQueue::add(
+     *      DemoAgent::class,
+     *      ['arg1', true],
+     *      [
+     *          ['export' => [100500]]
+     *      ],
+     *      'project.module'
+     * );
+     * ```
+     * The result: will be the registered agent `\Project\Module\DemoAgent::agent('arg1', true)->export(100500);`.
+     * 
      * @param string $className Agent class name.
      * @param array $args Arguments for `__constructor` of agent class.
-     * @param array $callChain
+     * @param array $callChain Chain methods with arguments for add them to agent name for execution.
      * @param string $module Module name agent.
      * @param string $isPeriod `Y` if periodic or 'N'.
      * @param int $interval Time interval between execution.
