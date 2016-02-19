@@ -14,14 +14,14 @@ namespace Notamedia\ConsoleJedi\Agent;
  * `\Vendor\Packeage\ClassName::agent();`. All arguments from this method will be duplicated to the object constructor:
  * `agent($arg1, …, $arg2)` → `__construct($arg1, …, $arg2)`.
  * 2. Create an object of Agent class.
- * 3. Call `run()` method.
+ * 3. Call execution method in Agent class.
  */
 trait AgentTrait
 {
     /**
-     * @var bool Agent is recurring.
+     * @var array Arguments for `__constructor`.
      */
-    protected $recurring = true;
+    protected static $constructorArgs;
     
     /**
      * Agent constructor.
@@ -44,51 +44,26 @@ trait AgentTrait
      *
      * `agent($arg1, …, $arg2)` → `__construct($arg1, …, $arg2)`.
      *
-     * @return string
+     * @return static
      */
     public static function agent()
     {
+        static::$constructorArgs = func_get_args();
+        
         $reflection = new \ReflectionClass(get_called_class());
 
-        /**
-         * @var static $agent
-         */
-        $agent = $reflection->newInstanceArgs(func_get_args());
-        $agent->run();
-
-        if ($agent->isRecurring())
-        {
-            return static::getAgentName(func_get_args());
-        }
+        return $reflection->newInstanceArgs(static::$constructorArgs);
     }
 
     /**
      * Gets agent name for queue of Bitrix.
      * 
-     * @param array $constructorArgs Arguments for class `__constructor()`.
+     * @param string $extraCall String with the call any method from Agent class.
      * 
      * @return string
      */
-    public static function getAgentName($constructorArgs)
+    public function getAgentName($extraCall = null)
     {
-        return '\\' . get_called_class() . '::agent(' . implode(', ', $constructorArgs). ');';
-    }
-
-    /**
-     * Runs the Agent.
-     *
-     * Notice, that overriding agent's initialisation and body, should be done though `init` and `execute` methods, not
-     * here.
-     */
-    abstract public function run();
-
-    /**
-     * Checks if Agent is the a recurring.
-     *
-     * @return bool
-     */
-    public function isRecurring()
-    {
-        return $this->recurring;
+        return AgentQueue::getAgentName(get_called_class(), static::$constructorArgs, $extraCall);
     }
 }
