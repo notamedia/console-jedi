@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Filesystem\Filesystem;
 
 class InitCommand extends Command
@@ -45,25 +46,11 @@ class InitCommand extends Command
      * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        $output->writeln('<comment>This command must be run from root directory of project</comment>');
-        
-        $question = new ConfirmationQuestion(
-            '' . getcwd() . ' - is root directory of project? [Y/n] ',
-            true,
-            '/^(y|j)/i'
-        );
-
-        if (!$this->questionHelper->ask($input, $output, $question))
-        {
-            $output->writeln('<info>Run this command from root directory of project</info>');
-            return;
-        }
-        
+    {        
         $output->writeln('<info>Install Console Jedi application</info>');
         
         $this->createEnvironmentsDir($input, $output);
-        $this->createApplicationFile($input, $output);
+        $this->createConfiguration($input, $output);
     }
     
     protected function createEnvironmentsDir(InputInterface $input, OutputInterface $output)
@@ -107,16 +94,16 @@ class InitCommand extends Command
         }
     }
     
-    protected function createApplicationFile(InputInterface $input, OutputInterface $output)
+    protected function createConfiguration(InputInterface $input, OutputInterface $output)
     {
-        $path = $this->getApplication()->getRoot() . '/jedi';
+        $path = $this->getApplication()->getRoot() . '/.jedi.php';
 
-        $output->writeln('  - Application');
+        $output->writeln('  - Configuration');
 
         if (file_exists($path))
         {
             $question = new ConfirmationQuestion(
-                '    <error>File ' . $path . ' already exists</error>' . PHP_EOL
+                '    <error>Configuration file ' . $path . ' already exists</error>' . PHP_EOL
                 . '    <info>Overwrite? [Y/n]</info> ',
                 true,
                 '/^(y|j)/i'
@@ -128,20 +115,20 @@ class InitCommand extends Command
             }
         }
         
-        $fs = new Filesystem();
+        $question = new Question('    <info>Enter path to web directory (document root of main site):</info> ');
+        $question->setValidator(function ($answer) {
+            if (!is_dir($answer))
+            {
+                throw new \RuntimeException('Directory "' . $answer . '" is missing');
+            }
+            
+            return $answer;
+        });
+        $webDir = $this->questionHelper->ask($input, $output, $question);
 
-        $content = file_get_contents($this->tmplDir . '/jedi');
-        $content = str_replace(
-            [
-                '%vendor-dir%',
-                '%web-dir%'
-            ],
-            [
-                
-            ], 
-            $content
-        );
-        
+        $fs = new Filesystem();
+        $content = file_get_contents($this->tmplDir . '/.jedi.php');
+        $content = str_replace('%web-dir%', $webDir, $content);
         $fs->dumpFile($path, $content);
     }
 }
