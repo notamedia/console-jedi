@@ -6,8 +6,20 @@
 
 namespace Notamedia\ConsoleJedi\Agent;
 
+/**
+ * Agent helper.
+ */
 class AgentHelper
 {
+    /**
+     * Gets agent name. Use to return this name from the executed method of agent.
+     * 
+     * @param string $className Agent class name.
+     * @param array $args Arguments for `__constructor` of agent class.
+     * @param array $callChain
+     *
+     * @return string
+     */
     public static function getAgentName($className, array $args = [], array $callChain = [])
     {
         $chain = '';

@@ -6,21 +6,28 @@
 
 namespace Notamedia\ConsoleJedi\Agent;
 
+/**
+ * Queue Bitrix agents.
+ */
 class AgentQueue
 {
     /**
-     * @param string $className
-     * @param array $args
+     * Adds new agent to the queue.
+     * 
+     * @param string $className Agent class name.
+     * @param array $args Arguments for `__constructor` of agent class.
      * @param array $callChain
-     * @param string $module
-     * @param string $isPeriod
-     * @param int $interval
-     * @param null $checkTime
-     * @param string $active
-     * @param null $execTime
-     * @param null $sort
-     * @param bool $userId
-     * @param bool $existError
+     * @param string $module Module name agent.
+     * @param string $isPeriod `Y` if periodic or 'N'.
+     * @param int $interval Time interval between execution.
+     * @param null $checkTime First check for execution time.
+     * @param string $active `Y` if agent active or 'N'.
+     * @param null $execTime First execution time.
+     * @param null $sort Sorting.
+     * @param bool $userId User ID.
+     * @param bool $existError Return error, if agent already exist.
+     * 
+     * @return bool
      */
     public static function add($className, array $args = [], array $callChain = [], $module = null, $isPeriod = 'N', 
         $interval = 86400, $checkTime = null, $active = 'Y', $execTime = null, $sort = null, $userId = false, 
@@ -40,10 +47,5 @@ class AgentQueue
             $userId,
             $existError
         );
-    }
-    
-    public static function delete($className, $args, $extraCall)
-    {
-        
     }
 }

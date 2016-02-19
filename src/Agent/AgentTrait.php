@@ -7,14 +7,15 @@
 namespace Notamedia\ConsoleJedi\Agent;
 
 /**
- * Trait helps make an Agent from any class.
+ * Trait helps make an agent from any class.
  *
- * Algorithm of Agent execution:
- * 1. Bitrix launches static method `Agent::agent()`. Your Agents should be registered in the same format:
- * `\Vendor\Packeage\ClassName::agent();`. All arguments from this method will be duplicated to the object constructor:
+ * Algorithm of agent execution:
+ * 1. Bitrix launches static method `Agent::agent()->%method%()`. Your agents should be registered in the same format:
+ * `\Vendor\Packeage\ClassName::agent()->%agent%();`. All arguments from this method will be duplicated to the object 
+ * constructor:
  * `agent($arg1, …, $arg2)` → `__construct($arg1, …, $arg2)`.
- * 2. Create an object of Agent class.
- * 3. Call execution method in Agent class.
+ * 2. Create an object of agent class.
+ * 3. Call execution method in agent class.
  */
 trait AgentTrait
 {
@@ -36,15 +37,17 @@ trait AgentTrait
     }
 
     /**
-     * Running Agent by Bitrix.
+     * Factory method for create object of agent class.
      *
-     * Bitrix calls this method to run Agent. Your Agents should be registered in the same format:
-     * `\Vendor\Packeage\ClassName::agent();`. All arguments from this method should be duplicated in the object
-     * constructor:
+     * Bitrix calls this method to run agent. Your agents should be registered  through 
+     * `\Notamedia\ConsoleJedi\Agent\AgentQueue`. All arguments from this method should 
+     * be duplicated in the object constructor:
      *
      * `agent($arg1, …, $arg2)` → `__construct($arg1, …, $arg2)`.
      *
      * @return static
+     * 
+     * @see AgentQueue
      */
     public static function agent()
     {
@@ -56,7 +59,7 @@ trait AgentTrait
     }
 
     /**
-     * Gets agent name for queue of Bitrix.
+     * Gets agent name. Use to return this name from the executed method of agent.
      * 
      * @param array $callChain Array with the call any methods from Agent class.
      * 
