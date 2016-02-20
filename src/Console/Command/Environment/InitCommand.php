@@ -59,6 +59,11 @@ class InitCommand extends Command
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
         parent::initialize($input, $output);
+
+        if (!$this->getApplication()->getConfiguration()['env-dir'])
+        {
+            throw new \Exception('Config env-dir is missing');
+        }
         
         $dir = $this->getApplication()->getRoot() . '/' . $this->getApplication()->getConfiguration()['env-dir'];
 

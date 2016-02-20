@@ -14,11 +14,8 @@ use Notamedia\ConsoleJedi\Console\Command\Agents;
 use Notamedia\ConsoleJedi\Console\Command\Cache;
 use Notamedia\ConsoleJedi\Console\Command\Environment;
 use Notamedia\ConsoleJedi\Console\Command\InitCommand;
-use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 
 /**
  * Console Jedi application.
@@ -76,9 +73,14 @@ class Application extends \Symfony\Component\Console\Application
 
         $this->initializeBitrix();
 
-        if ($this->getBitrixStatus() && $moduleCommands = $this->getModulesCommands())
+        if ($this->getBitrixStatus() && $this->getConfiguration()['useModules'] === true)
         {
-            $this->addCommands($moduleCommands);
+            $moduleCommands = $this->getModulesCommands();
+            
+            foreach ($moduleCommands as $moduleCommand)
+            {
+                $this->add($moduleCommand);
+            }
         }
         
         return parent::doRun($input, $output);
@@ -104,7 +106,7 @@ class Application extends \Symfony\Component\Console\Application
     {
         if (!is_file($path))
         {
-            throw new \Exception('Configuration file ' . $path . ' is missing');
+            return;
         }
         
         $this->configuration = include $path;
@@ -125,13 +127,12 @@ class Application extends \Symfony\Component\Console\Application
     /**
      * Gets console commands from modules.
      * 
-     * @return array|null
+     * @return array
      * 
      * @throws \Bitrix\Main\LoaderException
      */
     protected function getModulesCommands()
     {
-        return [];
         $commands = [];
                 
         foreach (ModuleManager::getInstalledModules() as $module)
@@ -166,7 +167,7 @@ class Application extends \Symfony\Component\Console\Application
             }
         }
         
-        return !empty($commands) ? $commands : null;
+        return $commands;
     }
 
     /**
