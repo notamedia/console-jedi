@@ -6,5 +6,6 @@ Console application for Bitrix CMS.
 
 ```bash
 composer require notamedia/console-jedi
+
 ./vendor/bin/jedi init
 ```
