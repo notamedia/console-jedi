@@ -6,8 +6,14 @@
 
 namespace Notamedia\ConsoleJedi\Console\Command;
 
+/**
+ * Base class for Bitrix console command.
+ */
 class BitrixCommand extends Command
 {
+    /**
+     * {@inheritdoc}
+     */
     public function isEnabled()
     {
         if ($this->getApplication()->getBitrixStatus())

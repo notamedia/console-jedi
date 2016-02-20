@@ -7,7 +7,6 @@
 namespace Notamedia\ConsoleJedi\Console;
 
 use Bitrix\Main\DB\ConnectionException;
-use Bitrix\Main\IO\File;
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
 use Notamedia\ConsoleJedi\Console\Command\Agents;
@@ -106,7 +105,16 @@ class Application extends \Symfony\Component\Console\Application
         
         return $commands;
     }
-    
+
+    /**
+     * Loading application configuration.
+     * 
+     * @param string $path Path to configuration file.
+     *
+     * @return bool
+     * 
+     * @throws \Exception
+     */
     public function loadConfiguration($path = self::CONFIG_DEFAULT_FILE)
     {
         if (!is_file($path))
@@ -130,7 +138,12 @@ class Application extends \Symfony\Component\Console\Application
         
         return true;
     }
-    
+
+    /**
+     * Gets application configuration.
+     * 
+     * @return null|array
+     */
     public function getConfiguration()
     {
         return $this->configuration;
@@ -153,11 +166,11 @@ class Application extends \Symfony\Component\Console\Application
             $moduleLocalDir = $_SERVER['DOCUMENT_ROOT'] . '/local/modules/' . $module['ID'];
             $cliFile = '/cli.php';
             
-            if (File::isFileExists($moduleBitrixDir . $cliFile))
+            if (is_file($moduleBitrixDir . $cliFile))
             {
                 $cliFile = $moduleBitrixDir . $cliFile;
             }
-            elseif (File::isFileExists($moduleLocalDir . $cliFile))
+            elseif (is_file($moduleLocalDir . $cliFile))
             {
                 $cliFile = $moduleLocalDir . $cliFile;
             }

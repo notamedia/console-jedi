@@ -20,6 +20,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ * Installation environment settings.
+ */
 class InitCommand extends Command
 {
     /**
@@ -31,11 +34,11 @@ class InitCommand extends Command
      */
     protected $config = [];
     /**
-     * @var array
+     * @var array Methods which be running in the first place.
      */
     protected $bootstrap = ['copyFiles'];
     /**
-     * @var array
+     * @var array Files that do not need to copy to the application when initializing the environment settings.
      */
     protected $excludedFiles = ['config.php'];
 
@@ -47,7 +50,7 @@ class InitCommand extends Command
         parent::configure();
 
         $this->setName('env:init')
-            ->setDescription('Init environment settings')
+            ->setDescription('Installation environment settings')
             ->setHelp('Run command and select environment from the list')
             ->addArgument('type', InputArgument::OPTIONAL, 'Type of the environments')
             ->addOption('memcache-cold-start', null, null, 'All memcache servers adds with status "ready"');
