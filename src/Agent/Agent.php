@@ -34,7 +34,8 @@ abstract class Agent
     public function run()
     {
         $this->init();
-        $this->execute();
+        
+        return $this->execute();
     }
 
     /**
@@ -46,6 +47,8 @@ abstract class Agent
 
     /**
      * Agent execution.
+     * 
+     * @return string Agent name if need again add his to queue. Use `$this->getAgentName()` for get name of agent.
      */
     protected function execute()
     {
