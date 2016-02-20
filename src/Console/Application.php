@@ -58,7 +58,7 @@ class Application extends \Symfony\Component\Console\Application
      */
     public function __construct($name = 'Console Jedi', $version = self::VERSION)
     {
-        parent::__construct('Console Jedi', static::VERSION);
+        parent::__construct($name, static::VERSION);
     }
 
     /**
