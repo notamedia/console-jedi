@@ -70,8 +70,18 @@ class Application extends \Symfony\Component\Console\Application
         {
             $this->loadConfiguration();
         }
-
+        
         $this->initializeBitrix();
+        
+        if ($this->getConfiguration())
+        {
+            $this->addCommands([
+                new Agents\OnCronCommand(),
+                new Agents\RunCommand(),
+                new Cache\ClearCommand(),
+                new Environment\InitCommand()
+            ]);
+        }
 
         if ($this->getBitrixStatus() && $this->getConfiguration()['useModules'] === true)
         {
@@ -92,21 +102,16 @@ class Application extends \Symfony\Component\Console\Application
     protected function getDefaultCommands()
     {
         $commands = parent::getDefaultCommands();
+        $commands[] = new InitCommand();
         
-        return array_merge($commands, [
-            new InitCommand(),
-            new Agents\OnCronCommand(),
-            new Agents\RunCommand(),
-            new Cache\ClearCommand(),
-            new Environment\InitCommand()
-        ]);
+        return $commands;
     }
     
     public function loadConfiguration($path = self::CONFIG_DEFAULT_FILE)
     {
         if (!is_file($path))
         {
-            return;
+            return false;
         }
         
         $this->configuration = include $path;
@@ -117,6 +122,13 @@ class Application extends \Symfony\Component\Console\Application
         }
 
         $_SERVER['DOCUMENT_ROOT'] = $this->getRoot() . '/' . $this->configuration['web-dir'];
+        
+        if (!is_dir($_SERVER['DOCUMENT_ROOT']))
+        {
+            return false;
+        }
+        
+        return true;
     }
     
     public function getConfiguration()
