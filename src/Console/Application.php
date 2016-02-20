@@ -14,8 +14,11 @@ use Notamedia\ConsoleJedi\Console\Command\Agents;
 use Notamedia\ConsoleJedi\Console\Command\Cache;
 use Notamedia\ConsoleJedi\Console\Command\Environment;
 use Notamedia\ConsoleJedi\Console\Command\InitCommand;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 
 /**
  * Console Jedi application.
@@ -26,6 +29,10 @@ class Application extends \Symfony\Component\Console\Application
      * Version of the Console Jedi application.
      */
     const VERSION = '1.0.0';
+    /**
+     * Default name of configuration file.
+     */
+    const CONFIG_DEFAULT_FILE = './.jedi.php';
     /**
      * Bitrix is unavailable.
      */
@@ -38,29 +45,35 @@ class Application extends \Symfony\Component\Console\Application
      * Bitrix is available.
      */
     const BITRIX_STATUS_COMPLETE = 10;
-    
+    /**
+     * @var int
+     */
     protected $bitrixStatus = Application::BITRIX_STATUS_UNAVAILABLE;
-    
+    /**
+     * @var null|string
+     */
     protected $documentRoot = null;
+    
+    private $configuration = null;
 
     /**
      * {@inheritdoc}
      */
-    public function __construct($webDir = null)
+    public function __construct($name = 'Console Jedi', $version = self::VERSION)
     {
-        if ($webDir)
-        {
-            $this->documentRoot = $_SERVER['DOCUMENT_ROOT'] = $this->getRoot() . '/' . $webDir;
-        }
-        
         parent::__construct('Console Jedi', static::VERSION);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function run(InputInterface $input = null, OutputInterface $output = null)
+    public function doRun(InputInterface $input, OutputInterface $output)
     {
+        if ($this->getConfiguration() === null)
+        {
+            $this->loadConfiguration();
+        }
+
         $this->initializeBitrix();
 
         if ($this->getBitrixStatus() && $moduleCommands = $this->getModulesCommands())
@@ -68,7 +81,7 @@ class Application extends \Symfony\Component\Console\Application
             $this->addCommands($moduleCommands);
         }
         
-        return parent::run($input, $output);
+        return parent::doRun($input, $output);
     }
 
     /**
@@ -86,6 +99,28 @@ class Application extends \Symfony\Component\Console\Application
             new Environment\InitCommand()
         ]);
     }
+    
+    public function loadConfiguration($path = self::CONFIG_DEFAULT_FILE)
+    {
+        if (!is_file($path))
+        {
+            throw new \Exception('Configuration file ' . $path . ' is missing');
+        }
+        
+        $this->configuration = include $path;
+        
+        if (!is_array($this->configuration))
+        {
+            throw new \Exception('Configuration file ' . $path . ' must return an array');
+        }
+
+        $_SERVER['DOCUMENT_ROOT'] = $this->getRoot() . '/' . $this->configuration['web-dir'];
+    }
+    
+    public function getConfiguration()
+    {
+        return $this->configuration;
+    }
 
     /**
      * Gets console commands from modules.
@@ -101,8 +136,8 @@ class Application extends \Symfony\Component\Console\Application
                 
         foreach (ModuleManager::getInstalledModules() as $module)
         {
-            $moduleBitrixDir = $this->documentRoot . BX_ROOT . '/modules/' . $module['ID'];
-            $moduleLocalDir = $this->documentRoot . '/local/modules/' . $module['ID'];
+            $moduleBitrixDir = $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/modules/' . $module['ID'];
+            $moduleLocalDir = $_SERVER['DOCUMENT_ROOT'] . '/local/modules/' . $module['ID'];
             $cliFile = '/cli.php';
             
             if (File::isFileExists($moduleBitrixDir . $cliFile))
@@ -174,9 +209,9 @@ class Application extends \Symfony\Component\Console\Application
     public function checkBitrix()
     {
         if (
-            !$this->documentRoot
-            || !is_file($this->documentRoot . '/bitrix/.settings.php')
-            || !is_file($this->documentRoot . '/bitrix/php_interface/dbconn.php'))
+            !$_SERVER['DOCUMENT_ROOT']
+            || !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/.settings.php')
+            || !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/dbconn.php'))
         {
             return false;
         }

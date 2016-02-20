@@ -16,7 +16,14 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class InitCommand extends Command
 {
+    /**
+     * @var string
+     */
     protected $tmplDir = __DIR__ . '/../../../tmpl';
+    /**
+     * @var string
+     */
+    protected $envDir = 'environments';
     /**
      * @var QuestionHelper $question
      */
@@ -55,7 +62,7 @@ class InitCommand extends Command
     
     protected function createEnvironmentsDir(InputInterface $input, OutputInterface $output)
     {
-        $targetDir = getcwd() . '/environments';
+        $targetDir = getcwd() . '/' . $this->envDir;
         $tmplDir = $this->tmplDir . '/environments';
         
         $output->writeln('  - Environment settings');
@@ -92,6 +99,8 @@ class InitCommand extends Command
                 $fs->copy($item, $itemPath, true);
             }
         }
+        
+        $output->writeln('    Created directory settings of environments: <comment>' . $targetDir . '</comment>');
     }
     
     protected function createConfiguration(InputInterface $input, OutputInterface $output)
@@ -128,7 +137,13 @@ class InitCommand extends Command
 
         $fs = new Filesystem();
         $content = file_get_contents($this->tmplDir . '/.jedi.php');
-        $content = str_replace('%web-dir%', $webDir, $content);
+        $content = str_replace(
+            ['%web-dir%', '%env-dir%'], 
+            [$webDir, $this->envDir], 
+            $content
+        );
         $fs->dumpFile($path, $content);
+
+        $output->writeln('    Created configuration file of application <comment>' . $path . '</comment>');
     }
 }

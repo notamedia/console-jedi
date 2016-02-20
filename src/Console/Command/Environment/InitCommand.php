@@ -9,7 +9,6 @@ namespace Notamedia\ConsoleJedi\Console\Command\Environment;
 use Bitrix\Main\Application;
 use Bitrix\Main\Config\Configuration;
 use Bitrix\Main\Config\Option;
-use Bitrix\Main\IO\Directory;
 use Bitrix\Main\IO\File;
 use Bitrix\Main\Loader;
 use Bitrix\Main\LoaderException;
@@ -18,7 +17,7 @@ use Notamedia\ConsoleJedi\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Filesystem\Filesystem;
 
 class InitCommand extends Command
@@ -28,9 +27,9 @@ class InitCommand extends Command
      */
     protected $dir;
     /**
-     * @var array Settings for current environment.
+     * @var array Settings for current environment. The contents of the file `config.php`.
      */
-    protected $configs = [];
+    protected $config = [];
     /**
      * @var array
      */
@@ -60,55 +59,53 @@ class InitCommand extends Command
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
         parent::initialize($input, $output);
+        
+        $dir = $this->getApplication()->getRoot() . '/' . $this->getApplication()->getConfiguration()['env-dir'];
 
-        $dir = $this->getApplication()->getRoot() . '/environments/';
-
-        if (!Directory::isDirectoryExists($dir))
+        if (!is_dir($dir))
         {
-            throw new \Exception('Environments directory not found');
+            throw new \Exception('Directory ' . $dir . ' is missing');
         }
 
-        $environments = include $dir . 'index.php';
+        $environments = include $dir . '/index.php';
 
         if (!is_array($environments))
         {
-            throw new \Exception('Environment\'s description file not found!');
+            throw new \Exception('File with description of environments is missing');
         }
         elseif (count($environments) == 0)
         {
-            throw new \Exception('Environments not found in description file!');
+            throw new \Exception('Environments not found in description file');
         }
 
         if ($input->getArgument('type'))
         {
             $code = $input->getArgument('type');
+
+            if (!isset($environments[$code]))
+            {
+                throw new \Exception('Invalid environment code!');
+            }
         }
         else
         {
-            $output->writeln('<info>Available environments:</info>');
-
-            foreach ($environments as $code => $settings)
+            foreach ($environments as $code => $environment)
             {
-                $output->writeln('<info> ' . $code . ' - ' . $settings['name'] . '</info>');
+                $choices[$code] = $environment['name'];
             }
-
+            
             $questionHelper = $this->getHelper('question');
-            $question = new Question('<question>Enter environment\'s name: </question>', false);
-            $question->setAutocompleterValues(array_keys($environments));
-            $code = trim($questionHelper->ask($input, $output, $question));
+            $question = new ChoiceQuestion('<info>Which environment install?</info>', $choices, false);
+            $code = $questionHelper->ask($input, $output, $question);
         }
 
-        if (!isset($environments[$code]))
-        {
-            throw new \Exception('Invalid environment name!');
-        }
-        elseif (!isset($environments[$code]['path']))
+        if (!isset($environments[$code]['path']))
         {
             throw new \Exception('Environment path not found!');
         }
 
-        $this->dir = $dir . $environments[$code]['path'];
-        $this->configs = include $this->dir . '/config.php';
+        $this->dir = $dir . '/' . $environments[$code]['path'];
+        $this->config = include $this->dir . '/config.php';
     }
 
     /**
@@ -123,9 +120,9 @@ class InitCommand extends Command
         
         $this->getApplication()->initializeBitrix();
         
-        foreach ($this->configs as $config => $settings)
+        foreach ($this->config as $config => $settings)
         {
-            $method = $config . 'Config';
+            $method = 'configure' . ucfirst($config);
 
             if (!in_array($method, $this->bootstrap) && method_exists($this, $method))
             {
@@ -179,7 +176,7 @@ class InitCommand extends Command
      * @param OutputInterface $output
      * @param string $licenseKey
      */
-    protected function licenseKeyConfig(InputInterface $input, OutputInterface $output, $licenseKey)
+    protected function configureLicenseKey(InputInterface $input, OutputInterface $output, $licenseKey)
     {
         if (!is_string($licenseKey))
         {
@@ -199,7 +196,7 @@ class InitCommand extends Command
      *
      * @throws LoaderException
      */
-    protected function modulesConfig(InputInterface $input, OutputInterface $output, array $modules)
+    protected function configureModules(InputInterface $input, OutputInterface $output, array $modules)
     {
         foreach ($modules as $module)
         {
@@ -226,7 +223,7 @@ class InitCommand extends Command
      * @param OutputInterface $output
      * @param array $settings
      */
-    protected function settingsConfig(InputInterface $input, OutputInterface $output, array $settings)
+    protected function configureSettings(InputInterface $input, OutputInterface $output, array $settings)
     {
         $configuration = Configuration::getInstance();
 
@@ -246,7 +243,7 @@ class InitCommand extends Command
      * @throws \Bitrix\Main\LoaderException
      * @throws \Exception
      */
-    protected function clusterConfig(InputInterface $input, OutputInterface $output, array $cluster)
+    protected function configureCluster(InputInterface $input, OutputInterface $output, array $cluster)
     {
         global $APPLICATION;
 
@@ -304,7 +301,7 @@ class InitCommand extends Command
      * @param OutputInterface $output
      * @param array $options
      */
-    protected function optionsConfig(InputInterface $input, OutputInterface $output, array $options)
+    protected function configureOptions(InputInterface $input, OutputInterface $output, array $options)
     {
         if (empty($options))
         {
