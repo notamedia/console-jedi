@@ -161,7 +161,7 @@ class InitCommand extends Command
             }
         }
         
-        $question = new Question('    <info>Enter path to web directory (document root of main site):</info> ');
+        $question = new Question('    <info>Enter path to web directory (document root of main site, relative or absolute):</info> ');
         $question->setValidator(function ($answer) {
             if (!is_dir($answer))
             {
@@ -176,7 +176,7 @@ class InitCommand extends Command
         $content = file_get_contents($this->tmplDir . '/.jedi.php');
         $content = str_replace(
             ['%web-dir%', '%env-dir%'], 
-            [$webDir, $this->envDir], 
+            [addslashes($webDir), addslashes($this->envDir)],
             $content
         );
         $fs->dumpFile($path, $content);
