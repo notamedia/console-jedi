@@ -112,7 +112,11 @@ class Application extends \Symfony\Component\Console\Application
                     break;
 
                 case static::BITRIX_STATUS_COMPLETE:
-                    $output->writeln(PHP_EOL . sprintf('Using Bitrix <info>kernel v%s</info>.</info>', SM_VERSION), OutputInterface::VERBOSITY_VERY_VERBOSE);
+                    if ($this->getCommandName($input) === null)
+                    {
+                        $output->writeln(PHP_EOL . sprintf('Using Bitrix <info>kernel v%s</info>.</info>', SM_VERSION),
+                            OutputInterface::VERBOSITY_VERY_VERBOSE);
+                    }
                     break;
             }
         }
