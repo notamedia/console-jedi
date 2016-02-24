@@ -161,7 +161,7 @@ class InitCommand extends Command
             }
         }
         
-        $question = new Question('    <info>Enter path to web directory (document root of main site):</info> ');
+        $question = new Question('    <info>Enter path to web directory (document root of main site, relative or absolute):</info> ');
         $question->setValidator(function ($answer) {
             if (!is_dir($answer))
             {
