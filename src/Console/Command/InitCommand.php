@@ -14,6 +14,9 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ * Command application initialization.
+ */
 class InitCommand extends Command
 {
     const COMPLETED_LOGO = '
@@ -52,27 +55,17 @@ class InitCommand extends Command
      ';
     
     /**
-     * Initialized in constructor with dynamic value __DIR__ . '/../../../tmpl'
-     * @var string
+     * @var string Path to directory with templates of the application files.
      */
     protected $tmplDir;
     /**
-     * @var string
+     * @var string Default name of directory with environments settings.
      */
     protected $envDir = 'environments';
     /**
      * @var QuestionHelper $question
      */
     protected $questionHelper;
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct($name = null)
-    {
-        parent::__construct($name);
-        $this->tmplDir = __DIR__ . '/../../../tmpl';
-    }
 
     /**
      * {@inheritdoc}
@@ -89,6 +82,7 @@ class InitCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
+        $this->tmplDir = __DIR__ . '/../../../tmpl';
         $this->questionHelper = $this->getHelper('question');
         
         parent::initialize($input, $output);
@@ -106,7 +100,13 @@ class InitCommand extends Command
         
         $output->writeln('<info>' . static::COMPLETED_LOGO . '</info>');
     }
-    
+
+    /**
+     * Creates directory with environments settings.
+     * 
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
     protected function createEnvironmentsDir(InputInterface $input, OutputInterface $output)
     {
         $targetDir = getcwd() . '/' . $this->envDir;
@@ -149,7 +149,13 @@ class InitCommand extends Command
         
         $output->writeln('    Created directory settings of environments: <comment>' . $targetDir . '</comment>');
     }
-    
+
+    /**
+     * Creates configuration file of application.
+     * 
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
     protected function createConfiguration(InputInterface $input, OutputInterface $output)
     {
         $path = $this->getApplication()->getRoot() . '/.jedi.php';

@@ -42,14 +42,16 @@ class Application extends \Symfony\Component\Console\Application
      */
     const BITRIX_STATUS_COMPLETE = 10;
     /**
-     * @var int
+     * @var int Status of Bitrix kernel. Value of constant `Application::BITRIX_STATUS_*`.
      */
     protected $bitrixStatus = Application::BITRIX_STATUS_UNAVAILABLE;
     /**
      * @var null|string
      */
     protected $documentRoot = null;
-    
+    /**
+     * @var null|array
+     */
     private $configuration = null;
 
     /**
