@@ -13,6 +13,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Installation configurations for run Agents on cron.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class OnCronCommand extends BitrixCommand
 {

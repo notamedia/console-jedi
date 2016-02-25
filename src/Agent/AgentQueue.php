@@ -8,6 +8,8 @@ namespace Notamedia\ConsoleJedi\Agent;
 
 /**
  * Queue Bitrix agents.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class AgentQueue
 {

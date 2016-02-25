@@ -8,6 +8,8 @@ namespace Notamedia\ConsoleJedi\Console\Command;
 
 /**
  * Base class for Bitrix console command.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class BitrixCommand extends Command
 {

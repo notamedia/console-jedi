@@ -22,6 +22,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Installation environment settings.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class InitCommand extends Command
 {

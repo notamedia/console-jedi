@@ -16,6 +16,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Command application initialization.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class InitCommand extends Command
 {

@@ -10,6 +10,11 @@ use Notamedia\ConsoleJedi\Console\Command\BitrixCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Run agents.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
+ */
 class RunCommand extends BitrixCommand
 {
     /**

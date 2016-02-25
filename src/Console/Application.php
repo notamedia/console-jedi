@@ -19,6 +19,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Console Jedi application.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class Application extends \Symfony\Component\Console\Application
 {
