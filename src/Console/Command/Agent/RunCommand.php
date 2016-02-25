@@ -4,7 +4,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command\Agents;
+namespace Notamedia\ConsoleJedi\Console\Command\Agent;
 
 use Notamedia\ConsoleJedi\Console\Command\BitrixCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +19,7 @@ class RunCommand extends BitrixCommand
     {
         parent::configure();
 
-        $this->setName('agents:run')
+        $this->setName('agent:run')
             ->setDescription('Runs execution of Agents');
     }
 
@@ -32,9 +32,13 @@ class RunCommand extends BitrixCommand
         @ignore_user_abort(true);
         define('CHK_EVENT', true);
 
-        \CAgent::CheckAgents();
+        $agentManager = new \CAgent();
+        $agentManager->CheckAgents();
+
         define('BX_CRONTAB_SUPPORT', true);
         define('BX_CRONTAB', true);
-        \CEvent::CheckEvents();
+
+        $eventManager = new \CEvent();
+        $eventManager->CheckEvents();
     }
 }

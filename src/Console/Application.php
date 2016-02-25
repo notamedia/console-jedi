@@ -9,7 +9,7 @@ namespace Notamedia\ConsoleJedi\Console;
 use Bitrix\Main\DB\ConnectionException;
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
-use Notamedia\ConsoleJedi\Console\Command\Agents;
+use Notamedia\ConsoleJedi\Console\Command\Agent;
 use Notamedia\ConsoleJedi\Console\Command\Cache;
 use Notamedia\ConsoleJedi\Console\Command\Environment;
 use Notamedia\ConsoleJedi\Console\Command\InitCommand;
@@ -77,8 +77,8 @@ class Application extends \Symfony\Component\Console\Application
         if ($this->getConfiguration())
         {
             $this->addCommands([
-                new Agents\OnCronCommand(),
-                new Agents\RunCommand(),
+                new Agent\OnCronCommand(),
+                new Agent\RunCommand(),
                 new Cache\ClearCommand(),
                 new Environment\InitCommand()
             ]);

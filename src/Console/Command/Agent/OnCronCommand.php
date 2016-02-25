@@ -4,7 +4,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command\Agents;
+namespace Notamedia\ConsoleJedi\Console\Command\Agent;
 
 use Bitrix\Main\Config\Option;
 use Notamedia\ConsoleJedi\Console\Command\BitrixCommand;
@@ -23,7 +23,7 @@ class OnCronCommand extends BitrixCommand
     {
         parent::configure();
 
-        $this->setName('agents:on-cron')
+        $this->setName('agent:on-cron')
             ->setDescription('Installation configurations for run Agents on cron');
     }
 
