@@ -22,7 +22,11 @@ trait AgentTrait
     /**
      * @var array Arguments for `__constructor`.
      */
-    protected static $constructorArgs;
+    private static $constructorArgs;
+    /**
+     * @var bool
+     */
+    private static $agentMode = false;
     
     /**
      * Agent constructor.
@@ -52,6 +56,7 @@ trait AgentTrait
     public static function agent()
     {
         static::$constructorArgs = func_get_args();
+        static::$agentMode = true;
         
         $reflection = new \ReflectionClass(get_called_class());
 
@@ -65,8 +70,19 @@ trait AgentTrait
      * 
      * @return string
      */
-    public function getAgentName(array $callChain = [])
+    public function getAgentName(array $callChain)
     {
         return AgentHelper::getAgentName(get_called_class(), static::$constructorArgs, $callChain);
+    }
+
+    /**
+     * Checks that object running as agent. Object is considered an agent 
+     * if it is created using the static method `agent()`.
+     * 
+     * @return bool
+     */
+    public function isAgentMode()
+    {
+        return static::$agentMode;
     }
 }
