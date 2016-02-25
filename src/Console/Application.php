@@ -95,18 +95,20 @@ class Application extends \Symfony\Component\Console\Application
             }
         }
 
-        $result = parent::doRun($input, $output);
+        $exitCode = parent::doRun($input, $output);
 
         if ($this->getConfiguration() === null)
         {
-            $output->writeln(PHP_EOL . '<error>No configuration loaded.</error> Please run <info>init</info> command first');
+            $output->writeln(PHP_EOL . '<error>No configuration loaded.</error> ' 
+                . 'Please run <info>init</info> command first');
         }
         else
         {
             switch ($this->getBitrixStatus())
             {
                 case static::BITRIX_STATUS_UNAVAILABLE:
-                    $output->writeln(PHP_EOL . sprintf('<error>No Bitrix kernel found in %s.</error> Please run <info>env:init</info> command to configure', $this->documentRoot));
+                    $output->writeln(PHP_EOL . sprintf('<error>No Bitrix kernel found in %s.</error> ' 
+                            . 'Please run <info>env:init</info> command to configure', $this->documentRoot));
                     break;
 
                 case static::BITRIX_STATUS_NO_DB_CONNECTION:
@@ -123,7 +125,7 @@ class Application extends \Symfony\Component\Console\Application
             }
         }
 
-        return $result;
+        return $exitCode;
     }
 
     /**
@@ -161,10 +163,15 @@ class Application extends \Symfony\Component\Console\Application
         }
 
         $filesystem = new Filesystem();
+        
         if ($filesystem->isAbsolutePath($this->configuration['web-dir']))
+        {
             $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $this->configuration['web-dir'];
+        }
         else
+        {
             $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $this->getRoot() . '/' . $this->configuration['web-dir'];
+        }
 
         if (!is_dir($_SERVER['DOCUMENT_ROOT']))
         {
