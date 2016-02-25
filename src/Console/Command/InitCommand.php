@@ -52,9 +52,10 @@ class InitCommand extends Command
      ';
     
     /**
+     * Initialized in constructor with dynamic value __DIR__ . '/../../../tmpl'
      * @var string
      */
-    protected $tmplDir = __DIR__ . '/../../../tmpl';
+    protected $tmplDir;
     /**
      * @var string
      */
@@ -63,6 +64,15 @@ class InitCommand extends Command
      * @var QuestionHelper $question
      */
     protected $questionHelper;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct($name = null)
+    {
+        parent::__construct($name);
+        $this->tmplDir = __DIR__ . '/../../../tmpl';
+    }
 
     /**
      * {@inheritdoc}
