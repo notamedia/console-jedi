@@ -15,6 +15,7 @@ use Notamedia\ConsoleJedi\Console\Command\Environment;
 use Notamedia\ConsoleJedi\Console\Command\InitCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Console Jedi application.
@@ -93,8 +94,36 @@ class Application extends \Symfony\Component\Console\Application
                 $this->add($moduleCommand);
             }
         }
-        
-        return parent::doRun($input, $output);
+
+        $result = parent::doRun($input, $output);
+
+        if ($this->getConfiguration() === null)
+        {
+            $output->writeln(PHP_EOL . '<error>No configuration loaded.</error> Please run <info>init</info> command first');
+        }
+        else
+        {
+            switch ($this->getBitrixStatus())
+            {
+                case static::BITRIX_STATUS_UNAVAILABLE:
+                    $output->writeln(PHP_EOL . sprintf('<error>No Bitrix kernel found in %s.</error> Please run <info>env:init</info> command to configure', $this->documentRoot));
+                    break;
+
+                case static::BITRIX_STATUS_NO_DB_CONNECTION:
+                    $output->writeln(PHP_EOL . '<error>Bitrix database connection is unavailable.</error>');
+                    break;
+
+                case static::BITRIX_STATUS_COMPLETE:
+                    if ($this->getCommandName($input) === null)
+                    {
+                        $output->writeln(PHP_EOL . sprintf('Using Bitrix <info>kernel v%s</info>.</info>', SM_VERSION),
+                            OutputInterface::VERBOSITY_VERY_VERBOSE);
+                    }
+                    break;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -131,8 +160,12 @@ class Application extends \Symfony\Component\Console\Application
             throw new \Exception('Configuration file ' . $path . ' must return an array');
         }
 
-        $_SERVER['DOCUMENT_ROOT'] = $this->getRoot() . '/' . $this->configuration['web-dir'];
-        
+        $filesystem = new Filesystem();
+        if ($filesystem->isAbsolutePath($this->configuration['web-dir']))
+            $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $this->configuration['web-dir'];
+        else
+            $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $this->getRoot() . '/' . $this->configuration['web-dir'];
+
         if (!is_dir($_SERVER['DOCUMENT_ROOT']))
         {
             return false;
