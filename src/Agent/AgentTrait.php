@@ -28,7 +28,7 @@ trait AgentTrait
     /**
      * @var bool
      */
-    private static $agentMode = false;
+    protected static $agentMode = false;
     
     /**
      * Agent constructor.
