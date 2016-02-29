@@ -24,7 +24,7 @@ trait AgentTrait
     /**
      * @var array Arguments for `__constructor`.
      */
-    private static $constructorArgs;
+    protected static $constructorArgs;
     /**
      * @var bool
      */
