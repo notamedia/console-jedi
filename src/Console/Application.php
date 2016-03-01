@@ -35,15 +35,15 @@ class Application extends \Symfony\Component\Console\Application
     /**
      * Bitrix is unavailable.
      */
-    const BITRIX_STATUS_UNAVAILABLE = 0;
+    const BITRIX_STATUS_UNAVAILABLE = 500;
     /**
      * Bitrix is available, but not have connection to DB.
      */
-    const BITRIX_STATUS_NO_DB_CONNECTION = 5;
+    const BITRIX_STATUS_NO_DB_CONNECTION = 100;
     /**
      * Bitrix is available.
      */
-    const BITRIX_STATUS_COMPLETE = 10;
+    const BITRIX_STATUS_COMPLETE = 0;
     /**
      * @var int Status of Bitrix kernel. Value of constant `Application::BITRIX_STATUS_*`.
      */
