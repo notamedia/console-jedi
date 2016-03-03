@@ -87,7 +87,7 @@ class Application extends \Symfony\Component\Console\Application
             ]);
         }
 
-        if ($this->getBitrixStatus() && $this->getConfiguration()['useModules'] === true)
+        if ($this->isBitrixLoaded() && $this->getConfiguration()['useModules'] === true)
         {
             $moduleCommands = $this->getModulesCommands();
             
@@ -297,6 +297,16 @@ class Application extends \Symfony\Component\Console\Application
     public function getBitrixStatus()
     {
         return $this->bitrixStatus;
+    }
+
+    /**
+     * Checks that the Bitrix kernel is loaded.
+     * 
+     * @return bool
+     */
+    public function isBitrixLoaded()
+    {
+        return $this->bitrixStatus === static::BITRIX_STATUS_COMPLETE;
     }
 
     /**

@@ -18,7 +18,7 @@ class BitrixCommand extends Command
      */
     public function isEnabled()
     {
-        if ($this->getApplication()->getBitrixStatus())
+        if ($this->getApplication()->isBitrixLoaded())
         {
             return true;
         }
