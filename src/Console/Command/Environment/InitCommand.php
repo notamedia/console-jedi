@@ -241,6 +241,11 @@ class InitCommand extends Command
         {
             $configuration->setValue($name, $value);
         }
+        
+        foreach ($settings['connections'] as $name => $parameters)
+        {
+            Application::getInstance()->getConnectionPool()->cloneConnection($name, $name, $parameters);
+        }
     }
 
     /**
