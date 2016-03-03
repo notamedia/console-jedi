@@ -38,7 +38,7 @@ class InitCommand extends Command
     /**
      * @var array Methods which be running in the first place.
      */
-    protected $bootstrap = ['copyFiles'];
+    protected $bootstrap = ['copyFiles', 'initializeBitrix'];
     /**
      * @var array Files that do not need to copy to the application when initializing the environment settings.
      */
@@ -127,9 +127,7 @@ class InitCommand extends Command
         {
             $this->$method($input, $output);
         }
-        
-        $this->getApplication()->initializeBitrix();
-        
+                
         foreach ($this->config as $config => $settings)
         {
             $method = 'configure' . ucfirst($config);
@@ -176,6 +174,18 @@ class InitCommand extends Command
             }
 
             $output->writeln('   ' . $itemPath);
+        }
+    }
+    
+    protected function initializeBitrix()
+    {
+        $this->getApplication()->initializeBitrix();
+
+        $connections = Configuration::getValue('connections');
+
+        foreach ($connections as $name => $parameters)
+        {
+            Application::getInstance()->getConnectionPool()->cloneConnection($name, $name, $parameters);
         }
     }
 
@@ -240,11 +250,6 @@ class InitCommand extends Command
         foreach ($settings as $name => $value)
         {
             $configuration->setValue($name, $value);
-        }
-        
-        foreach ($settings['connections'] as $name => $parameters)
-        {
-            Application::getInstance()->getConnectionPool()->cloneConnection($name, $name, $parameters);
         }
     }
 
@@ -346,6 +351,8 @@ class InitCommand extends Command
                 else
                 {
                     Option::set($module, $code, $value);
+
+                    $output->writeln('   option: "' . $code . '", module: "' . $module . '"');
                 }
             }
         }

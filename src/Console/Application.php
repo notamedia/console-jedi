@@ -75,7 +75,10 @@ class Application extends \Symfony\Component\Console\Application
             $this->loadConfiguration();
         }
         
-        $this->initializeBitrix();
+        if (!in_array($this->getCommandName($input), ['environment:init', 'env:init']))
+        {
+            $this->initializeBitrix();
+        }
         
         if ($this->getConfiguration())
         {
@@ -279,9 +282,9 @@ class Application extends \Symfony\Component\Console\Application
     public function checkBitrix()
     {
         if (
-            !$_SERVER['DOCUMENT_ROOT']
-            || !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/.settings.php')
-            || !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/dbconn.php'))
+            !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/.settings.php') 
+            && !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/.settings_extra.php')
+        )
         {
             return false;
         }
