@@ -17,6 +17,8 @@ namespace Notamedia\ConsoleJedi\Agent;
  * 2. Create an object of agent class.
  * 3. Call `init()` method. It is needed for some initial operations, for example: loading required modules.
  * 4. Call `execute()` method. This will execute main agent's logic.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 abstract class Agent
 {

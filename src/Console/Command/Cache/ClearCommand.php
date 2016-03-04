@@ -16,6 +16,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Command for clear Bitrix cache.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class ClearCommand extends BitrixCommand
 {

@@ -16,17 +16,19 @@ namespace Notamedia\ConsoleJedi\Agent;
  * `agent($arg1, …, $arg2)` → `__construct($arg1, …, $arg2)`.
  * 2. Create an object of agent class.
  * 3. Call execution method in agent class.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 trait AgentTrait
 {
     /**
      * @var array Arguments for `__constructor`.
      */
-    private static $constructorArgs;
+    protected static $constructorArgs;
     /**
      * @var bool
      */
-    private static $agentMode = false;
+    protected static $agentMode = false;
     
     /**
      * Agent constructor.

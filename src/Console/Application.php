@@ -9,7 +9,7 @@ namespace Notamedia\ConsoleJedi\Console;
 use Bitrix\Main\DB\ConnectionException;
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
-use Notamedia\ConsoleJedi\Console\Command\Agents;
+use Notamedia\ConsoleJedi\Console\Command\Agent;
 use Notamedia\ConsoleJedi\Console\Command\Cache;
 use Notamedia\ConsoleJedi\Console\Command\Environment;
 use Notamedia\ConsoleJedi\Console\Command\InitCommand;
@@ -19,6 +19,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Console Jedi application.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class Application extends \Symfony\Component\Console\Application
 {
@@ -33,15 +35,15 @@ class Application extends \Symfony\Component\Console\Application
     /**
      * Bitrix is unavailable.
      */
-    const BITRIX_STATUS_UNAVAILABLE = 0;
+    const BITRIX_STATUS_UNAVAILABLE = 500;
     /**
      * Bitrix is available, but not have connection to DB.
      */
-    const BITRIX_STATUS_NO_DB_CONNECTION = 5;
+    const BITRIX_STATUS_NO_DB_CONNECTION = 100;
     /**
      * Bitrix is available.
      */
-    const BITRIX_STATUS_COMPLETE = 10;
+    const BITRIX_STATUS_COMPLETE = 0;
     /**
      * @var int Status of Bitrix kernel. Value of constant `Application::BITRIX_STATUS_*`.
      */
@@ -73,19 +75,22 @@ class Application extends \Symfony\Component\Console\Application
             $this->loadConfiguration();
         }
         
-        $this->initializeBitrix();
+        if (!in_array($this->getCommandName($input), ['environment:init', 'env:init']))
+        {
+            $this->initializeBitrix();
+        }
         
         if ($this->getConfiguration())
         {
             $this->addCommands([
-                new Agents\OnCronCommand(),
-                new Agents\RunCommand(),
+                new Agent\OnCronCommand(),
+                new Agent\RunCommand(),
                 new Cache\ClearCommand(),
                 new Environment\InitCommand()
             ]);
         }
 
-        if ($this->getBitrixStatus() && $this->getConfiguration()['useModules'] === true)
+        if ($this->isBitrixLoaded() && $this->getConfiguration()['useModules'] === true)
         {
             $moduleCommands = $this->getModulesCommands();
             
@@ -95,18 +100,20 @@ class Application extends \Symfony\Component\Console\Application
             }
         }
 
-        $result = parent::doRun($input, $output);
+        $exitCode = parent::doRun($input, $output);
 
         if ($this->getConfiguration() === null)
         {
-            $output->writeln(PHP_EOL . '<error>No configuration loaded.</error> Please run <info>init</info> command first');
+            $output->writeln(PHP_EOL . '<error>No configuration loaded.</error> ' 
+                . 'Please run <info>init</info> command first');
         }
         else
         {
             switch ($this->getBitrixStatus())
             {
                 case static::BITRIX_STATUS_UNAVAILABLE:
-                    $output->writeln(PHP_EOL . sprintf('<error>No Bitrix kernel found in %s.</error> Please run <info>env:init</info> command to configure', $this->documentRoot));
+                    $output->writeln(PHP_EOL . sprintf('<error>No Bitrix kernel found in %s.</error> ' 
+                            . 'Please run <info>env:init</info> command to configure', $this->documentRoot));
                     break;
 
                 case static::BITRIX_STATUS_NO_DB_CONNECTION:
@@ -123,7 +130,7 @@ class Application extends \Symfony\Component\Console\Application
             }
         }
 
-        return $result;
+        return $exitCode;
     }
 
     /**
@@ -161,10 +168,15 @@ class Application extends \Symfony\Component\Console\Application
         }
 
         $filesystem = new Filesystem();
+        
         if ($filesystem->isAbsolutePath($this->configuration['web-dir']))
+        {
             $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $this->configuration['web-dir'];
+        }
         else
+        {
             $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $this->getRoot() . '/' . $this->configuration['web-dir'];
+        }
 
         if (!is_dir($_SERVER['DOCUMENT_ROOT']))
         {
@@ -270,9 +282,9 @@ class Application extends \Symfony\Component\Console\Application
     public function checkBitrix()
     {
         if (
-            !$_SERVER['DOCUMENT_ROOT']
-            || !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/.settings.php')
-            || !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/dbconn.php'))
+            !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/.settings.php') 
+            && !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/.settings_extra.php')
+        )
         {
             return false;
         }
@@ -288,6 +300,16 @@ class Application extends \Symfony\Component\Console\Application
     public function getBitrixStatus()
     {
         return $this->bitrixStatus;
+    }
+
+    /**
+     * Checks that the Bitrix kernel is loaded.
+     * 
+     * @return bool
+     */
+    public function isBitrixLoaded()
+    {
+        return $this->bitrixStatus === static::BITRIX_STATUS_COMPLETE;
     }
 
     /**

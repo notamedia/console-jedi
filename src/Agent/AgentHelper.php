@@ -7,7 +7,9 @@
 namespace Notamedia\ConsoleJedi\Agent;
 
 /**
- * Agent helper.
+ * Agent helpers.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class AgentHelper
 {

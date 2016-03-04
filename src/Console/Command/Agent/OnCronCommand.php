@@ -4,13 +4,19 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command\Agents;
+namespace Notamedia\ConsoleJedi\Console\Command\Agent;
 
+use Bitrix\Main\Config\Option;
 use Notamedia\ConsoleJedi\Console\Command\BitrixCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class RunCommand extends BitrixCommand
+/**
+ * Installation configurations for run Agents on cron.
+ * 
+ * @author Nik Samokhvalov <nik@samokhvalov.info>
+ */
+class OnCronCommand extends BitrixCommand
 {
     /**
      * {@inheritdoc}
@@ -19,8 +25,8 @@ class RunCommand extends BitrixCommand
     {
         parent::configure();
 
-        $this->setName('agents:run')
-            ->setDescription('Runs execution of Agents');
+        $this->setName('agent:on-cron')
+            ->setDescription('Installation configurations for run Agents on cron');
     }
 
     /**
@@ -28,13 +34,7 @@ class RunCommand extends BitrixCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        @set_time_limit(0);
-        @ignore_user_abort(true);
-        define('CHK_EVENT', true);
-
-        \CAgent::CheckAgents();
-        define('BX_CRONTAB_SUPPORT', true);
-        define('BX_CRONTAB', true);
-        \CEvent::CheckEvents();
+        Option::set('main', 'agents_use_crontab', 'N');
+        Option::set('main', 'check_agents', 'N');
     }
 }
