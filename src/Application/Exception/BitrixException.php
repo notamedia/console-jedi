@@ -4,7 +4,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command\Module;
+namespace Notamedia\ConsoleJedi\Application\Exception;
 
 /**
  * Wrap for legacy bitrix core exceptions
@@ -25,10 +25,10 @@ class BitrixException extends \RuntimeException
 	}
 
 	/**
-	 * Проверяет есть ли исключение старого ядра битрикс, если есть, выбрасывает исключение
+	 * Check for legacy bitrix exception, throws new self if any
 	 *
-	 * @param string $message [не обязательный] Дололнительное описание обстоятельств ошибки
-	 * @param \CMain $APPLICATION [не обязательный] Объект $APPLICATION
+	 * @param string $message [optional] Additional error message
+	 * @param \CMain $APPLICATION [optional] $APPLICATION instance
 	 * @throws static
 	 */
 	public static function generate($message = null, \CMain $APPLICATION = null)

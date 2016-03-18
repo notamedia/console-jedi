@@ -4,22 +4,21 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command\Module;
+namespace Notamedia\ConsoleJedi\Module\Command;
 
-use Notamedia\ConsoleJedi\Console\Command\BitrixCommand;
-use Symfony\Component\Console\Helper\QuestionHelper;
+use Notamedia\ConsoleJedi\Application\Command\BitrixCommand;
+use Notamedia\ConsoleJedi\Module\Exception\ModuleNotFoundException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 /**
  * Module helper
  *
  * @author Marat Shamshutdinov <m.shamshutdinov@gmail.com>
  */
-class ModuleCommand extends BitrixCommand
+abstract class ModuleCommand extends BitrixCommand
 {
 	/** @var string */
 	protected $moduleName;
@@ -122,20 +121,7 @@ class ModuleCommand extends BitrixCommand
 				['module:register', 'module:unregister']) && $this->isThrirdParty($this->moduleName) && !$input->getOption('confirm-thirdparty')
 		)
 		{
-			$output->writeln($this->moduleName . ' is not a kernel module. Correct operation is cannot be guaranteed for third-party modules!');
-			return;
-			$question = new ConfirmationQuestion(
-				$this->moduleName . ' is not a kernel module. Correct operation is cannot be guaranteed for third-party modules!' . PHP_EOL
-				. '<question>Procceed? [N/y]</question> ',
-				false
-			);
-
-			/** @var QuestionHelper $questionHelper */
-			$questionHelper = $this->getHelper('question');
-			if (!$questionHelper->ask($input, $output, $question))
-			{
-				throw new \RuntimeException('User aborted');
-			}
+			$output->writeln($this->moduleName . ' is not a kernel module. Correct operation cannot be guaranteed for third-party modules!');
 		}
 	}
 }

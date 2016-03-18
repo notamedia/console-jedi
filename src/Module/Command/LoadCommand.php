@@ -4,12 +4,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command\Module;
+namespace Notamedia\ConsoleJedi\Module\Command;
 
 use Bitrix\Main\ModuleManager;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
 
 /**
  * Command for module installation/register
@@ -75,6 +76,8 @@ class LoadCommand extends ModuleCommand
 
 				return $registerCommand->run($registerInput, $output);
 			}
+
+			return 0;
 		}
 		catch (ModuleException $e)
 		{

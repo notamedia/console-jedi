@@ -4,11 +4,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command\Module;
+namespace Notamedia\ConsoleJedi\Module\Command;
 
 use Bitrix\Main\ModuleManager;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
+use Notamedia\ConsoleJedi\Application\Exception\BitrixException;
 
 /**
  * Command for module installation/register
@@ -50,6 +52,7 @@ class UnregisterCommand extends ModuleCommand
 				}
 
 				// @todo Return value is not documented, no need to check it?
+				/** @noinspection PhpVoidFunctionResultUsedInspection */
 				if (!$module->UnInstallFiles())
 				{
 					$output->writeln(sprintf('<info>%s::UnInstallFiles() returned false;</info>'));
@@ -61,6 +64,7 @@ class UnregisterCommand extends ModuleCommand
 
 				// @todo Return value is not documented, no need to check it?
 				// @todo iblock module problem
+				/** @noinspection PhpVoidFunctionResultUsedInspection */
 				if (!$module->UnInstallDB())
 				{
 					$output->writeln(sprintf('<info>%s::UnInstallDB() returned false;</info>'));
@@ -75,8 +79,8 @@ class UnregisterCommand extends ModuleCommand
 
 				/**
 				 * @todo Try to guess correct uninstallation
-				 * — check if module files are delete from /bitrix/components/ 
-				 * — other ways?
+				 * - check if module files are delete from /bitrix/components/
+				 * - other ways?
 				 */
 				$output->writeln(sprintf('Module %s uninstalled', $this->moduleName));			}
 			else
@@ -84,6 +88,7 @@ class UnregisterCommand extends ModuleCommand
 				$output->writeln(sprintf('<comment>Module %s wasn\'t installed</comment>', $this->moduleName));
 			}
 
+			return 0;
 		}
 		catch (ModuleException $e)
 		{

@@ -4,11 +4,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command\Module;
+namespace Notamedia\ConsoleJedi\Module\Command;
 
 use Bitrix\Main\ModuleManager;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
+use Notamedia\ConsoleJedi\Application\Exception\BitrixException;
 
 /**
  * Command for module installation/register
@@ -56,7 +58,7 @@ class RegisterCommand extends ModuleCommand
 
 				/**
 				 * @todo Return value is not documented, do we need to check it?
-				 * — Where can be „false-positives“ then module developer forgot to return anything
+				 * ï¿½ Where can be ï¿½false-positivesï¿½ then module developer forgot to return anything
 				 */
 				if (!$module->InstallDB())
 				{
@@ -70,6 +72,7 @@ class RegisterCommand extends ModuleCommand
 				$module->InstallEvents();
 
 				// @todo Return value is not documented, no need to check it?
+				/** @noinspection PhpVoidFunctionResultUsedInspection */
 				if (!$module->InstallFiles())
 				{
 					$output->writeln(sprintf('<info>%s::InstallFiles() returned false;</info>'));
@@ -81,8 +84,8 @@ class RegisterCommand extends ModuleCommand
 
 				/**
 				 * @todo Try to guess correct installation
-				 * — check if files are copied from module/install/component to /bitrix/components/
-				 * — other ways?
+				 * - check if files are copied from module/install/component to /bitrix/components/
+				 * - other ways?
 				 */
 
 				if (!ModuleManager::isModuleInstalled($this->moduleName))
@@ -92,6 +95,8 @@ class RegisterCommand extends ModuleCommand
 
 				$output->writeln(sprintf('Module %s successfully installed', $this->moduleName));
 			}
+
+			return 0;
 		}
 		catch (ModuleException $e)
 		{
