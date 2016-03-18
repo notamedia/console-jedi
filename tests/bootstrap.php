@@ -1,4 +1,3 @@
-#!/usr/bin/env php
 <?php
 /**
  * For the full copyright and license information, please view the LICENSE.md
@@ -8,4 +7,8 @@
 require_once __DIR__ . '/../../../autoload.php';
 
 $app = new \Notamedia\ConsoleJedi\Application\Application();
-$app->run();
+$app->loadConfiguration();
+$app->initializeBitrix();
+
+$loader = new \Notamedia\ConsoleJedi\Loader();
+$loader->loadTests();

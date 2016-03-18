@@ -4,7 +4,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command;
+namespace Notamedia\ConsoleJedi\Application\Command;
 
 /**
  * Base class for Bitrix console command.
