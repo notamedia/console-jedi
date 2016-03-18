@@ -4,7 +4,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command\Environment;
+namespace Notamedia\ConsoleJedi\Environment\Command;
 
 use Bitrix\Main\Application;
 use Bitrix\Main\Config\Configuration;
@@ -13,7 +13,7 @@ use Bitrix\Main\IO\File;
 use Bitrix\Main\Loader;
 use Bitrix\Main\LoaderException;
 use Bitrix\Main\ModuleManager;
-use Notamedia\ConsoleJedi\Console\Command\Command;
+use Notamedia\ConsoleJedi\Application\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

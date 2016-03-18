@@ -4,7 +4,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command;
+namespace Notamedia\ConsoleJedi\Application\Command;
 
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;

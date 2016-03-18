@@ -6,7 +6,7 @@
 
 require_once __DIR__ . '/../../../autoload.php';
 
-$app = new \Notamedia\ConsoleJedi\Console\Application();
+$app = new \Notamedia\ConsoleJedi\Application\Application();
 $app->loadConfiguration();
 $app->initializeBitrix();
 
