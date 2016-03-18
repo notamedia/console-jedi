@@ -4,16 +4,16 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console;
+namespace Notamedia\ConsoleJedi\Application;
 
 use Bitrix\Main\DB\ConnectionException;
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
-use Notamedia\ConsoleJedi\Console\Command\Agent;
-use Notamedia\ConsoleJedi\Console\Command\Cache;
-use Notamedia\ConsoleJedi\Console\Command\Environment;
-use Notamedia\ConsoleJedi\Console\Command\InitCommand;
-use Notamedia\ConsoleJedi\Console\Command\Module;
+use Notamedia\ConsoleJedi\Agent\Command\OnCronCommand;
+use Notamedia\ConsoleJedi\Agent\Command\RunCommand;
+use Notamedia\ConsoleJedi\Cache\Command\ClearCommand;
+use Notamedia\ConsoleJedi\Environment\Command\InitCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -83,24 +83,15 @@ class Application extends \Symfony\Component\Console\Application
         
         if ($this->getConfiguration())
         {
-            $this->addCommands([
-                new Agent\OnCronCommand(),
-                new Agent\RunCommand(),
-                new Cache\ClearCommand(),
-                new Environment\InitCommand(),
-                new Module\RegisterCommand(),
-                new Module\UnregisterCommand(),
-                new Module\LoadCommand(),
-                new Module\RemoveCommand(),
-                new Module\UpdateCommand(),
-            ]);
+            foreach ($this->getBitrixCommands() as $bitrixCommand)
+            {
+                $this->add($bitrixCommand);
+            }
         }
 
         if ($this->isBitrixLoaded() && $this->getConfiguration()['useModules'] === true)
         {
-            $moduleCommands = $this->getModulesCommands();
-            
-            foreach ($moduleCommands as $moduleCommand)
+            foreach ($this->getModulesCommands() as $moduleCommand)
             {
                 $this->add($moduleCommand);
             }
@@ -145,8 +136,69 @@ class Application extends \Symfony\Component\Console\Application
     protected function getDefaultCommands()
     {
         $commands = parent::getDefaultCommands();
-        $commands[] = new InitCommand();
+        $commands[] = new \Notamedia\ConsoleJedi\Application\Command\InitCommand();
         
+        return $commands;
+    }
+
+    /**
+     * Gets Bitrix console commands from this package.
+     * 
+     * @return Command[]
+     */
+    protected function getBitrixCommands()
+    {
+        return [
+            new OnCronCommand(),
+            new RunCommand(),
+            new ClearCommand(),
+            new InitCommand()
+        ];
+    }
+
+    /**
+     * Gets console commands from modules.
+     *
+     * @return Command[]
+     *
+     * @throws \Bitrix\Main\LoaderException
+     */
+    protected function getModulesCommands()
+    {
+        $commands = [];
+
+        foreach (ModuleManager::getInstalledModules() as $module)
+        {
+            $moduleBitrixDir = $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/modules/' . $module['ID'];
+            $moduleLocalDir = $_SERVER['DOCUMENT_ROOT'] . '/local/modules/' . $module['ID'];
+            $cliFile = '/cli.php';
+
+            if (is_file($moduleBitrixDir . $cliFile))
+            {
+                $cliFile = $moduleBitrixDir . $cliFile;
+            }
+            elseif (is_file($moduleLocalDir . $cliFile))
+            {
+                $cliFile = $moduleLocalDir . $cliFile;
+            }
+            else
+            {
+                continue;
+            }
+
+            if (!Loader::includeModule($module['ID']))
+            {
+                continue;
+            }
+
+            $config = include_once $cliFile;
+
+            if (isset($config['commands']) && is_array($config['commands']))
+            {
+                $commands = array_merge($commands, $config['commands']);
+            }
+        }
+
         return $commands;
     }
 
@@ -203,52 +255,6 @@ class Application extends \Symfony\Component\Console\Application
     }
 
     /**
-     * Gets console commands from modules.
-     * 
-     * @return array
-     * 
-     * @throws \Bitrix\Main\LoaderException
-     */
-    protected function getModulesCommands()
-    {
-        $commands = [];
-                
-        foreach (ModuleManager::getInstalledModules() as $module)
-        {
-            $moduleBitrixDir = $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/modules/' . $module['ID'];
-            $moduleLocalDir = $_SERVER['DOCUMENT_ROOT'] . '/local/modules/' . $module['ID'];
-            $cliFile = '/cli.php';
-            
-            if (is_file($moduleBitrixDir . $cliFile))
-            {
-                $cliFile = $moduleBitrixDir . $cliFile;
-            }
-            elseif (is_file($moduleLocalDir . $cliFile))
-            {
-                $cliFile = $moduleLocalDir . $cliFile;
-            }
-            else
-            {
-                continue;
-            }
-            
-            if (!Loader::includeModule($module['ID']))
-            {
-                continue;
-            }
-                
-            $config = include_once $cliFile;
-
-            if (isset($config['commands']) && is_array($config['commands']))
-            {
-                $commands = array_merge($commands, $config['commands']);
-            }
-        }
-        
-        return $commands;
-    }
-
-    /**
      * Initialize kernel of Bitrix.
      * 
      * @return int The status of readiness kernel.
@@ -265,13 +271,6 @@ class Application extends \Symfony\Component\Console\Application
 
         try
         {
-            /**
-             * Declare global legacy variables
-             *
-             * Including kernel here makes them local by default but some modules depend on them in installation class
-             */
-            global $DB, $DBType, $DBHost, $DBLogin, $DBPassword, $DBName, $DBDebug, $DBDebugToFile, $APPLICATION, $USER, $DBSQLServerType;
-
             require_once $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_before.php';
             
             if (defined('B_PROLOG_INCLUDED') && B_PROLOG_INCLUDED === true)

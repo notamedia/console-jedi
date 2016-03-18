@@ -4,7 +4,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Console\Command;
+namespace Notamedia\ConsoleJedi\Application\Command;
 
 /**
  * Base class for console command.
@@ -14,7 +14,7 @@ namespace Notamedia\ConsoleJedi\Console\Command;
 class Command extends \Symfony\Component\Console\Command\Command
 {
     /**
-     * @return \Notamedia\ConsoleJedi\Console\Application
+     * @return \Notamedia\ConsoleJedi\Application\Application
      */
     public function getApplication()
     {
