@@ -7,10 +7,10 @@
 namespace Notamedia\ConsoleJedi\Module\Command;
 
 use Bitrix\Main\ModuleManager;
+use Notamedia\ConsoleJedi\Application\Exception\BitrixException;
+use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
-use Notamedia\ConsoleJedi\Application\Exception\BitrixException;
 
 /**
  * Command for module installation/register
@@ -26,7 +26,7 @@ class UnregisterCommand extends ModuleCommand
 	{
 		$this->setName('module:unregister')
 			->setDescription('Uninstall module');
-		
+
 		parent::configure();
 	}
 
@@ -35,65 +35,60 @@ class UnregisterCommand extends ModuleCommand
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
-		try
+		$module =& $this->getModuleObject();
+
+		if (ModuleManager::isModuleInstalled($this->moduleName))
 		{
-			$module =& $this->getModuleObject();
+			/**
+			 * It's important to check if module class defines UnInstallDB method (it must unregister module)
+			 * Thus absent UnInstallDB indicates that the module does not support automatic uninstallation
+			 */
+			if ((new \ReflectionClass($module))->getMethod('UnInstallDB')->class !== get_class($module))
+			{
+				throw new ModuleException('Missing UnInstallDB method. This module does not support automatic uninstallation',
+					$this->moduleName);
+			}
+
+			// @todo Return value is not documented, no need to check it?
+			/** @noinspection PhpVoidFunctionResultUsedInspection */
+			if (!$module->UnInstallFiles())
+			{
+				$output->writeln(sprintf('<info>%s::UnInstallFiles() returned false;</info>'));
+				if (BitrixException::hasException())
+				{
+					BitrixException::generate();
+				}
+			}
+
+			$module->UnInstallEvents();
+
+			// @todo Return value is not documented, no need to check it?
+			// @todo iblock module problem
+			/** @noinspection PhpVoidFunctionResultUsedInspection */
+			if (!$module->UnInstallDB())
+			{
+				$output->writeln(sprintf('<info>%s::UnInstallDB() returned false;</info>'));
+				if (BitrixException::hasException())
+				{
+					BitrixException::generate();
+				}
+			}
 
 			if (ModuleManager::isModuleInstalled($this->moduleName))
 			{
-				/**
-				 * It's important to check if module class defines UnInstallDB method (it must unregister module)
-				 * Thus absent UnInstallDB indicates that the module does not support automatic uninstallation
-				 */
-				if ((new \ReflectionClass($module))->getMethod('UnInstallDB')->class !== get_class($module))
-				{
-					throw new ModuleException('Missing UnInstallDB method. This module does not support automatic uninstallation',
-						$this->moduleName);
-				}
-
-				// @todo Return value is not documented, no need to check it?
-				/** @noinspection PhpVoidFunctionResultUsedInspection */
-				if (!$module->UnInstallFiles())
-				{
-					$output->writeln(sprintf('<info>%s::UnInstallFiles() returned false;</info>'));
-					if (BitrixException::hasException())
-						BitrixException::generate();
-				}
-
-				$module->UnInstallEvents();
-
-				// @todo Return value is not documented, no need to check it?
-				// @todo iblock module problem
-				/** @noinspection PhpVoidFunctionResultUsedInspection */
-				if (!$module->UnInstallDB())
-				{
-					$output->writeln(sprintf('<info>%s::UnInstallDB() returned false;</info>'));
-					if (BitrixException::hasException())
-						BitrixException::generate();
-				}
-
-				if (ModuleManager::isModuleInstalled($this->moduleName))
-				{
-					throw new ModuleException('Module was not unregistred', $this->moduleName);
-				}
-
-				/**
-				 * @todo Try to guess correct uninstallation
-				 * - check if module files are delete from /bitrix/components/
-				 * - other ways?
-				 */
-				$output->writeln(sprintf('Module %s uninstalled', $this->moduleName));			}
-			else
-			{
-				$output->writeln(sprintf('<comment>Module %s wasn\'t installed</comment>', $this->moduleName));
+				throw new ModuleException('Module was not unregistred', $this->moduleName);
 			}
 
-			return 0;
+			/**
+			 * @todo Try to guess correct uninstallation
+			 * - check if module files are delete from /bitrix/components/
+			 * - other ways?
+			 */
+			$output->writeln(sprintf('Module %s uninstalled', $this->moduleName));
 		}
-		catch (ModuleException $e)
+		else
 		{
-			$output->writeln('<error>' . $e->getMessage() . '</error>');
-			return 1;
+			$output->writeln(sprintf('<comment>Module %s wasn\'t installed</comment>', $this->moduleName));
 		}
 	}
 }

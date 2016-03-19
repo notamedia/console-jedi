@@ -11,7 +11,6 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
 
 /**
  * Command for module installation/register
@@ -36,43 +35,28 @@ class RemoveCommand extends ModuleCommand
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
-		try
+		if (ModuleManager::isModuleInstalled($this->moduleName))
 		{
-			if (ModuleManager::isModuleInstalled($this->moduleName))
-			{
-				$arguments = array(
-					'command' => 'module:unregister',
-					'module' => $this->moduleName,
-					'',
-				);
-				$unregisterInput = new ArrayInput($arguments);
-				$returnCode = $this->getApplication()->find('module:unregister')->run($unregisterInput, $output);
-				if ($returnCode > 0)
-				{
-					return $returnCode;
-				}
-			}
-
-			$path = getLocalPath('modules/' . $this->moduleName);
-
-			if ($path)
-			{
-				(new Filesystem())->remove($_SERVER['DOCUMENT_ROOT'] . $path);
-
-				$output->writeln(sprintf('Module %s removed', $this->moduleName));
-			}
-			else
-			{
-				$output->writeln(sprintf('<error>Module %s is not found</error>', $this->moduleName));
-			}
-
-			return 0;
+			$arguments = array(
+				'command' => 'module:unregister',
+				'module' => $this->moduleName,
+				'',
+			);
+			$unregisterInput = new ArrayInput($arguments);
+			$this->getApplication()->find('module:unregister')->run($unregisterInput, $output);
 		}
-		catch (ModuleException $e)
-		{
-			$output->writeln('<error>' . $e->getMessage() . '</error>');
 
-			return 1;
+		$path = getLocalPath('modules/' . $this->moduleName);
+
+		if ($path)
+		{
+			(new Filesystem())->remove($_SERVER['DOCUMENT_ROOT'] . $path);
+
+			$output->writeln(sprintf('Module %s removed', $this->moduleName));
+		}
+		else
+		{
+			$output->writeln(sprintf('<error>Module %s is not found</error>', $this->moduleName));
 		}
 	}
 }

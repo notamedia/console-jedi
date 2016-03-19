@@ -7,10 +7,10 @@
 namespace Notamedia\ConsoleJedi\Module\Command;
 
 use Bitrix\Main\ModuleManager;
+use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
 
 /**
  * Command for module installation/register
@@ -35,55 +35,44 @@ class LoadCommand extends ModuleCommand
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
-		try
+		if (!$this->isThrirdParty())
 		{
-			if (!$this->isThrirdParty())
-			{
-				$output->writeln('<info>Module name seems incorrect: ' . $this->moduleName . '</info>');
-			}
+			$output->writeln('<info>Module name seems incorrect: ' . $this->moduleName . '</info>');
+		}
 
-			if (ModuleManager::isModuleInstalled($this->moduleName) && $this->moduleExists())
+		if (ModuleManager::isModuleInstalled($this->moduleName) && $this->moduleExists())
+		{
+			$output->writeln(sprintf('<comment>Module %s is already registered</comment>', $this->moduleName));
+		}
+		else
+		{
+			if ($this->moduleExists())
 			{
-				$output->writeln(sprintf('<comment>Module %s is already registered</comment>', $this->moduleName));
+				$output->writeln('Module is already loaded');
 			}
 			else
 			{
-				if ($this->moduleExists())
+				require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/modules/main/classes/general/update_client_partner.php');
+
+				$output->write('Downloading module... ');
+
+				if (!\CUpdateClientPartner::LoadModuleNoDemand($this->moduleName, $strError, $bStable = "Y", LANGUAGE_ID))
 				{
-					$output->writeln('Module is already loaded');
-				}
-				else
-				{
-					require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/modules/main/classes/general/update_client_partner.php');
-
-					$output->write('Downloading module... ');
-
-					if (!\CUpdateClientPartner::LoadModuleNoDemand($this->moduleName, $strError, $bStable = "Y", LANGUAGE_ID))
-					{
-						throw new ModuleException(sprintf('Error occured: %s', $strError), $this->moduleName);
-					}
-
-					$output->writeln('<info>done</info>');
+					throw new ModuleException(sprintf('Error occured: %s', $strError), $this->moduleName);
 				}
 
-				$registerCommand = $this->getApplication()->find('module:register');
-				$arguments = array(
-					'command' => 'module:register',
-					'module' => $this->moduleName,
-					'',
-				);
-				$registerInput = new ArrayInput($arguments);
-
-				return $registerCommand->run($registerInput, $output);
+				$output->writeln('<info>done</info>');
 			}
 
-			return 0;
-		}
-		catch (ModuleException $e)
-		{
-			$output->writeln('<error>' . $e->getMessage() . '</error>');
+			$registerCommand = $this->getApplication()->find('module:register');
+			$arguments = array(
+				'command' => 'module:register',
+				'module' => $this->moduleName,
+				'',
+			);
+			$registerInput = new ArrayInput($arguments);
 
-			return 1;
+			$registerCommand->run($registerInput, $output);
 		}
 	}
 }
