@@ -45,7 +45,6 @@ class UpdateCommand extends ModuleCommand
 	 */
 	protected function restartScript(InputInterface $input, OutputInterface $output)
 	{
-		$returnStatus = null;
 		// --no-install argument for calls from module:load command, module will be installed in most parent copy
 		$proc = popen('php -f ' . join(' ', $GLOBALS['argv']) . ' --no-install 2>&1', 'r');
 		while (!feof($proc))
