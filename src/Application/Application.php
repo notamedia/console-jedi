@@ -11,6 +11,7 @@ use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
 use Notamedia\ConsoleJedi\Agent\Command\OnCronCommand;
 use Notamedia\ConsoleJedi\Agent\Command\RunCommand;
+use Notamedia\ConsoleJedi\Application\Exception\ConfigurationException;
 use Notamedia\ConsoleJedi\Cache\Command\ClearCommand;
 use Notamedia\ConsoleJedi\Environment\Command\InitCommand;
 use Symfony\Component\Console\Command\Command;
@@ -209,7 +210,7 @@ class Application extends \Symfony\Component\Console\Application
      *
      * @return bool
      * 
-     * @throws \Exception
+     * @throws ConfigurationException
      */
     public function loadConfiguration($path = self::CONFIG_DEFAULT_FILE)
     {
@@ -222,7 +223,7 @@ class Application extends \Symfony\Component\Console\Application
         
         if (!is_array($this->configuration))
         {
-            throw new \Exception('Configuration file ' . $path . ' must return an array');
+            throw new ConfigurationException('Configuration file ' . $path . ' must return an array');
         }
 
         $filesystem = new Filesystem();
@@ -261,7 +262,11 @@ class Application extends \Symfony\Component\Console\Application
      */
     public function initializeBitrix()
     {
-        if (!$this->checkBitrix())
+        if ($this->bitrixStatus === static::BITRIX_STATUS_COMPLETE)
+        {
+            return static::BITRIX_STATUS_COMPLETE;
+        }
+        elseif (!$this->checkBitrix())
         {
             return static::BITRIX_STATUS_UNAVAILABLE;
         }
@@ -322,6 +327,62 @@ class Application extends \Symfony\Component\Console\Application
     public function isBitrixLoaded()
     {
         return $this->bitrixStatus === static::BITRIX_STATUS_COMPLETE;
+    }
+
+    public function autoloadTests()
+    {
+        if ($this->getConfiguration() === null)
+        {
+            $this->loadConfiguration();
+        }
+        
+        $this->initializeBitrix();
+        
+        spl_autoload_register(function ($className) {
+            $file = ltrim($className, "\\");
+            $file = strtr($file, Loader::ALPHA_UPPER, Loader::ALPHA_LOWER);
+            $file = str_replace('\\', '/', $file);
+
+            if (substr($file, -5) === 'table')
+            {
+                $file = substr($file, 0, -5);
+            }
+
+            $arFile = explode('/', $file);
+
+            if (preg_match("#[^\\\\/a-zA-Z0-9_]#", $file))
+            {
+                return false;
+            }
+            elseif ($arFile[0] === 'bitrix')
+            {
+                return false;
+            }
+            elseif ($arFile[2] !== 'tests')
+            {
+                return false;
+            }
+
+            $module = array_shift($arFile) . '.' . array_shift($arFile);
+
+            if (!Loader::includeModule($module))
+            {
+                return false;
+            }
+
+            $file = $module . '/' . implode('/', $arFile) . '.php';
+            $bitrixPath = \Bitrix\Main\Application::getDocumentRoot() . '/' . Loader::BITRIX_HOLDER . '/modules/' . $file;
+            $localPath = \Bitrix\Main\Application::getDocumentRoot() . '/' . Loader::LOCAL_HOLDER . '/modules/' . $file;
+
+            if (file_exists($bitrixPath))
+            {
+                include_once $bitrixPath;
+            }
+            elseif (file_exists($localPath))
+            {
+                include_once $localPath;
+            }
+        });
     }
 
     /**
