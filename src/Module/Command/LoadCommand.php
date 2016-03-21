@@ -9,6 +9,7 @@ namespace Notamedia\ConsoleJedi\Module\Command;
 use Bitrix\Main\ModuleManager;
 use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -25,7 +26,9 @@ class LoadCommand extends ModuleCommand
 	protected function configure()
 	{
 		$this->setName('module:load')
-			->setDescription('Load and install module from Marketplace');
+			->setDescription('Load and install module from Marketplace')
+			->addOption('no-update', 'nu', InputOption::VALUE_NONE, 'Don\' update module')
+			->addOption('no-install', 'ni', InputOption::VALUE_NONE, 'Load only, don\' register module');
 
 		parent::configure();
 	}
@@ -46,11 +49,7 @@ class LoadCommand extends ModuleCommand
 		}
 		else
 		{
-			if ($this->moduleExists())
-			{
-				$output->writeln('Module is already loaded');
-			}
-			else
+			if (!$this->moduleExists())
 			{
 				require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/modules/main/classes/general/update_client_partner.php');
 
@@ -64,15 +63,32 @@ class LoadCommand extends ModuleCommand
 				$output->writeln('<info>done</info>');
 			}
 
-			$registerCommand = $this->getApplication()->find('module:register');
-			$arguments = array(
-				'command' => 'module:register',
-				'module' => $this->moduleName,
-				'',
-			);
-			$registerInput = new ArrayInput($arguments);
+			if ($input->getOption('no-update'))
+			{
+				$updateResult = 0;
+			}
+			else
+			{
+				$updateCommand = $this->getApplication()->find('module:update');
+				$arguments = [
+					'command' => 'module:update',
+					'module' => $this->moduleName,
+				];
+				$registerInput = new ArrayInput($arguments);
+				$updateResult = $updateCommand->run($registerInput, $output);
+			}
 
-			$registerCommand->run($registerInput, $output);
+			if ($updateResult === 0 && !$input->getOption('no-install'))
+			{
+				$registerCommand = $this->getApplication()->find('module:register');
+				$arguments = [
+					'command' => 'module:register',
+					'module' => $this->moduleName,
+				];
+				$registerInput = new ArrayInput($arguments);
+
+				$registerCommand->run($registerInput, $output);
+			}
 		}
 	}
 }

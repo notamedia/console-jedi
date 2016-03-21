@@ -54,10 +54,6 @@ class RegisterCommand extends ModuleCommand
 					$this->moduleName);
 			}
 
-			/**
-			 * @todo Return value is not documented, do we need to check it?
-			 * � Where can be �false-positives� then module developer forgot to return anything
-			 */
 			if (!$module->InstallDB())
 			{
 				$output->writeln(sprintf('<info>%s::InstallDB() returned false;</info>'));
@@ -69,7 +65,6 @@ class RegisterCommand extends ModuleCommand
 
 			$module->InstallEvents();
 
-			// @todo Return value is not documented, no need to check it?
 			/** @noinspection PhpVoidFunctionResultUsedInspection */
 			if (!$module->InstallFiles())
 			{
@@ -79,12 +74,6 @@ class RegisterCommand extends ModuleCommand
 					BitrixException::generate();
 				}
 			}
-
-			/**
-			 * @todo Try to guess correct installation
-			 * - check if files are copied from module/install/component to /bitrix/components/
-			 * - other ways?
-			 */
 
 			if (!ModuleManager::isModuleInstalled($this->moduleName))
 			{

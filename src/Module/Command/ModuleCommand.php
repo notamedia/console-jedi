@@ -116,9 +116,8 @@ abstract class ModuleCommand extends BitrixCommand
 	{
 		parent::interact($input, $output);
 
-		// @todo decide on which commands to show this warning
-		if (in_array($this->getName(),
-				['module:register', 'module:unregister']) && $this->isThrirdParty($this->moduleName) && !$input->getOption('confirm-thirdparty')
+		if (in_array($this->getName(), ['module:register', 'module:unregister'])
+			&& $this->isThrirdParty($this->moduleName) && !$input->getOption('confirm-thirdparty')
 		)
 		{
 			$output->writeln($this->moduleName . ' is not a kernel module. Correct operation cannot be guaranteed for third-party modules!');

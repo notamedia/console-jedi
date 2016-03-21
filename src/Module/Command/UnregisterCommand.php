@@ -49,7 +49,6 @@ class UnregisterCommand extends ModuleCommand
 					$this->moduleName);
 			}
 
-			// @todo Return value is not documented, no need to check it?
 			/** @noinspection PhpVoidFunctionResultUsedInspection */
 			if (!$module->UnInstallFiles())
 			{
@@ -62,8 +61,6 @@ class UnregisterCommand extends ModuleCommand
 
 			$module->UnInstallEvents();
 
-			// @todo Return value is not documented, no need to check it?
-			// @todo iblock module problem
 			/** @noinspection PhpVoidFunctionResultUsedInspection */
 			if (!$module->UnInstallDB())
 			{
@@ -79,11 +76,6 @@ class UnregisterCommand extends ModuleCommand
 				throw new ModuleException('Module was not unregistred', $this->moduleName);
 			}
 
-			/**
-			 * @todo Try to guess correct uninstallation
-			 * - check if module files are delete from /bitrix/components/
-			 * - other ways?
-			 */
 			$output->writeln(sprintf('Module %s uninstalled', $this->moduleName));
 		}
 		else
