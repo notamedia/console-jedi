@@ -329,6 +329,14 @@ class Application extends \Symfony\Component\Console\Application
         return $this->bitrixStatus === static::BITRIX_STATUS_COMPLETE;
     }
 
+    /**
+     * Autoloader classes of the tests. 
+     * 
+     * Initializes Bitrix kernel, finds and connects files in directory `vendor.module/tests/` 
+     * by pattern `<class>test.php` and loading modules of tests.
+     * 
+     * @throws ConfigurationException
+     */
     public function autoloadTests()
     {
         if ($this->getConfiguration() === null)
@@ -370,17 +378,11 @@ class Application extends \Symfony\Component\Console\Application
                 return false;
             }
 
-            $file = $module . '/' . implode('/', $arFile) . '.php';
-            $bitrixPath = \Bitrix\Main\Application::getDocumentRoot() . '/' . Loader::BITRIX_HOLDER . '/modules/' . $file;
-            $localPath = \Bitrix\Main\Application::getDocumentRoot() . '/' . Loader::LOCAL_HOLDER . '/modules/' . $file;
+            $path = getLocalPath('/modules/' . $module . '/' . implode('/', $arFile) . '.php');
 
-            if (file_exists($bitrixPath))
+            if (file_exists($path))
             {
-                include_once $bitrixPath;
-            }
-            elseif (file_exists($localPath))
-            {
-                include_once $localPath;
+                include_once $path;
             }
         });
     }
