@@ -53,7 +53,7 @@ class Application extends \Symfony\Component\Console\Application
     /**
      * @var null|string
      */
-    protected $documentRoot = null;
+    private $documentRoot = null;
     /**
      * @var null|array
      */
@@ -111,7 +111,7 @@ class Application extends \Symfony\Component\Console\Application
             {
                 case static::BITRIX_STATUS_UNAVAILABLE:
                     $output->writeln(PHP_EOL . sprintf('<error>No Bitrix kernel found in %s.</error> ' 
-                            . 'Please run <info>env:init</info> command to configure', $this->documentRoot));
+                            . 'Please run <info>env:init</info> command to configure', $this->getDocumentRoot()));
                     break;
 
                 case static::BITRIX_STATUS_NO_DB_CONNECTION:
@@ -170,29 +170,18 @@ class Application extends \Symfony\Component\Console\Application
 
         foreach (ModuleManager::getInstalledModules() as $module)
         {
-            $moduleBitrixDir = $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/modules/' . $module['ID'];
-            $moduleLocalDir = $_SERVER['DOCUMENT_ROOT'] . '/local/modules/' . $module['ID'];
-            $cliFile = '/cli.php';
+            $cliFile = getLocalPath('modules/' . $module['ID'] . '/cli.php');
 
-            if (is_file($moduleBitrixDir . $cliFile))
+            if ($cliFile === false)
             {
-                $cliFile = $moduleBitrixDir . $cliFile;
+                continue;
             }
-            elseif (is_file($moduleLocalDir . $cliFile))
-            {
-                $cliFile = $moduleLocalDir . $cliFile;
-            }
-            else
+            elseif (!Loader::includeModule($module['ID']))
             {
                 continue;
             }
 
-            if (!Loader::includeModule($module['ID']))
-            {
-                continue;
-            }
-
-            $config = include_once $cliFile;
+            $config = include_once $this->getDocumentRoot() . $cliFile;
 
             if (isset($config['commands']) && is_array($config['commands']))
             {
@@ -230,11 +219,11 @@ class Application extends \Symfony\Component\Console\Application
         
         if ($filesystem->isAbsolutePath($this->configuration['web-dir']))
         {
-            $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $this->configuration['web-dir'];
+            $this->setDocumentRoot($this->configuration['web-dir']);
         }
         else
         {
-            $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $this->getRoot() . '/' . $this->configuration['web-dir'];
+            $this->setDocumentRoot($this->getRoot() . '/' . $this->configuration['web-dir']);
         }
 
         if (!is_dir($_SERVER['DOCUMENT_ROOT']))
@@ -382,7 +371,7 @@ class Application extends \Symfony\Component\Console\Application
 
             if ($path !== false)
             {
-                include_once $path;
+                include_once $this->getDocumentRoot() . $path;
             }
         });
     }
@@ -395,5 +384,25 @@ class Application extends \Symfony\Component\Console\Application
     public function getRoot()
     {
         return getcwd();
+    }
+
+    /**
+     * Sets path to the document root of site.
+     * 
+     * @param string $dir Path to document root.
+     */
+    public function setDocumentRoot($dir)
+    {
+        $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $dir;
+    }
+
+    /**
+     * Gets document root of site.
+     * 
+     * @return null|string
+     */
+    public function getDocumentRoot()
+    {
+        return $this->documentRoot;
     }
 }
