@@ -144,23 +144,22 @@ class Application extends \Symfony\Component\Console\Application
 
     /**
      * Gets Bitrix console commands from this package.
-     * 
+     *
      * @return Command[]
      */
     protected function getBitrixCommands()
     {
-        return [
-            new OnCronCommand(),
-            new RunCommand(),
-            new ClearCommand(),
-            new InitCommand(),
-            new Module\LoadCommand(),
-            new Module\RegisterCommand(),
-            new Module\RemoveCommand(),
-            new Module\UnregisterCommand(),
-            new Module\UpdateCommand(),
-        ];
+        return array_merge(
+            [
+                new OnCronCommand(),
+                new RunCommand(),
+                new ClearCommand(),
+                new InitCommand(),
+            ],
+            Module\ModuleCommand::getCommands()
+        );
     }
+
 
     /**
      * Gets console commands from modules.

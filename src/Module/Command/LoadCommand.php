@@ -6,11 +6,9 @@
 
 namespace Notamedia\ConsoleJedi\Module\Command;
 
-use Bitrix\Main\ModuleManager;
-use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Input\InputOption;
+use Notamedia\ConsoleJedi\Module\Module;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -20,17 +18,20 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class LoadCommand extends ModuleCommand
 {
+	use CanRestart;
+
 	/**
 	 * {@inheritdoc}
 	 */
 	protected function configure()
 	{
+		parent::configure();
+
 		$this->setName('module:load')
 			->setDescription('Load and install module from Marketplace')
 			->addOption('no-update', 'nu', InputOption::VALUE_NONE, 'Don\' update module')
-			->addOption('no-install', 'ni', InputOption::VALUE_NONE, 'Load only, don\' register module');
-
-		parent::configure();
+			->addOption('no-install', 'ni', InputOption::VALUE_NONE, 'Load only, don\' register module')
+			->addOption('beta', 'b', InputOption::VALUE_NONE, 'Allow the installation of beta releases');
 	}
 
 	/**
@@ -38,57 +39,43 @@ class LoadCommand extends ModuleCommand
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
-		if (!$this->isThrirdParty())
+		$module = new Module($input->getArgument('module'));
+
+		if (!$module->isThirdParty())
 		{
-			$output->writeln('<info>Module name seems incorrect: ' . $this->moduleName . '</info>');
+			$output->writeln('<info>Loading kernel modules is unsupported</info>');
 		}
 
-		if (ModuleManager::isModuleInstalled($this->moduleName) && $this->moduleExists())
+		if ($input->getOption('beta'))
 		{
-			$output->writeln(sprintf('<comment>Module %s is already registered</comment>', $this->moduleName));
+			$module->setBeta();
 		}
-		else
+
+		$module->load();
+
+		if (!$input->getOption('no-update'))
 		{
-			if (!$this->moduleExists())
+			$modulesUpdated = null;
+			while ($module->update($modulesUpdated))
 			{
-				require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/modules/main/classes/general/update_client_partner.php');
-
-				$output->write('Downloading module... ');
-
-				if (!\CUpdateClientPartner::LoadModuleNoDemand($this->moduleName, $strError, $bStable = "Y", LANGUAGE_ID))
+				if (is_array($modulesUpdated))
 				{
-					throw new ModuleException(sprintf('Error occured: %s', $strError), $this->moduleName);
+					foreach ($modulesUpdated as $moduleName => $moduleVersion)
+					{
+						$output->writeln(sprintf('updated %s to <info>%s</info>', $moduleName, $moduleVersion));
+					}
 				}
-
-				$output->writeln('<info>done</info>');
-			}
-
-			if ($input->getOption('no-update'))
-			{
-				$updateResult = 0;
-			}
-			else
-			{
-				$updateCommand = $this->getApplication()->find('module:update');
-				$arguments = [
-					'command' => 'module:update',
-					'module' => $this->moduleName,
-				];
-				$registerInput = new ArrayInput($arguments);
-				$updateResult = $updateCommand->run($registerInput, $output);
-			}
-
-			if ($updateResult === 0 && !$input->getOption('no-install'))
-			{
-				$registerCommand = $this->getApplication()->find('module:register');
-				$arguments = [
-					'command' => 'module:register',
-					'module' => $this->moduleName,
-				];
-				$registerInput = new ArrayInput($arguments);
-
-				$registerCommand->run($registerInput, $output);
+				return $this->restartScript($input, $output);
 			}
 		}
+
+		if (!$input->getOption('no-install'))
+		{
+			$module->install();
+		}
+
+		$output->writeln(sprintf('installed <info>%s</info>', $module->getName()));
+
+		return 0;
 	}
 }

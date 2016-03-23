@@ -7,106 +7,29 @@
 namespace Notamedia\ConsoleJedi\Module\Command;
 
 use Notamedia\ConsoleJedi\Application\Command\BitrixCommand;
-use Notamedia\ConsoleJedi\Module\Exception\ModuleNotFoundException;
+use Notamedia\ConsoleJedi\Module\Module;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Module helper
+ * Module command base class
  *
  * @author Marat Shamshutdinov <m.shamshutdinov@gmail.com>
  */
 abstract class ModuleCommand extends BitrixCommand
 {
-	/** @var string */
-	protected $moduleName;
-
-	/** @var \CModule */
-	protected $moduleObject;
-
-	/**
-	 * @var array Methods to call
-	 */
-	protected $bootstrap = ['copyFiles', 'initializeBitrix'];
-
 	/**
 	 * {@inheritdoc}
 	 */
 	protected function configure()
 	{
+		parent::configure();
+
 		$this->addArgument('module', InputArgument::REQUIRED, 'Module name (e.g. `vendor.module`)')
 			->addOption('confirm-thirdparty', 'ct', InputOption::VALUE_NONE, 'Suppress third-party modules warning');
-	}
-
-	/**
-	 * @param string $moduleName
-	 * @return string
-	 */
-	protected function normalizeModuleName($moduleName)
-	{
-		return preg_replace("/[^a-zA-Z0-9_.]+/i", "", trim($moduleName));
-	}
-
-	/**
-	 * @return \CModule
-	 */
-	protected function &getModuleObject()
-	{
-		if (!isset($this->moduleObject))
-		{
-			if (!isset($this->moduleName))
-			{
-				throw new \LogicException('moduleName is not set');
-			}
-
-			$this->moduleObject = \CModule::CreateModuleObject($this->moduleName);
-		}
-
-		if (!is_object($this->moduleObject) || !($this->moduleObject instanceof \CModule))
-		{
-			unset($this->moduleObject);
-			throw new ModuleNotFoundException('Module not found or incorrect', $this->moduleName);
-		}
-
-		return $this->moduleObject;
-	}
-
-	/**
-	 * @return bool
-	 */
-	protected function moduleExists()
-	{
-		try
-		{
-			$this->getModuleObject();
-		}
-		catch (ModuleNotFoundException $e)
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * @param string [optional] $moduleName
-	 * @return bool true for marketplace modules, false for kernel modules
-	 */
-	protected function isThrirdParty($moduleName = null)
-	{
-		return strpos($moduleName ? $moduleName : $this->moduleName, '.') !== false;
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	protected function initialize(InputInterface $input, OutputInterface $output)
-	{
-		parent::initialize($input, $output);
-
-		$this->moduleName = $this->normalizeModuleName($input->getArgument('module'));
 	}
 
 	/**
@@ -116,11 +39,30 @@ abstract class ModuleCommand extends BitrixCommand
 	{
 		parent::interact($input, $output);
 
+		$module = new Module($input->getArgument('module'));
+
 		if (in_array($this->getName(), ['module:register', 'module:unregister'])
-			&& $this->isThrirdParty($this->moduleName) && !$input->getOption('confirm-thirdparty')
+			&& $module->isThirdParty() && !$input->getOption('confirm-thirdparty')
 		)
 		{
-			$output->writeln($this->moduleName . ' is not a kernel module. Correct operation cannot be guaranteed for third-party modules!');
+			$output->writeln($module->isThirdParty() . ' is not a kernel module. Correct operation cannot be guaranteed for third-party modules!');
 		}
 	}
+
+	/**
+	 * Gets console commands from this package.
+	 *
+	 * @return Command[]
+	 */
+	public static function getCommands()
+	{
+		return [
+			new LoadCommand(),
+			new RegisterCommand(),
+			new RemoveCommand(),
+			new UnregisterCommand(),
+			new UpdateCommand(),
+		];
+	}
+
 }

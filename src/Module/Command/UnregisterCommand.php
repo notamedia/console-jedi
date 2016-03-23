@@ -6,9 +6,7 @@
 
 namespace Notamedia\ConsoleJedi\Module\Command;
 
-use Bitrix\Main\ModuleManager;
-use Notamedia\ConsoleJedi\Application\Exception\BitrixException;
-use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
+use Notamedia\ConsoleJedi\Module\Module;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -24,10 +22,10 @@ class UnregisterCommand extends ModuleCommand
 	 */
 	protected function configure()
 	{
+		parent::configure();
+
 		$this->setName('module:unregister')
 			->setDescription('Uninstall module');
-
-		parent::configure();
 	}
 
 	/**
@@ -35,52 +33,8 @@ class UnregisterCommand extends ModuleCommand
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
-		$module =& $this->getModuleObject();
-
-		if (ModuleManager::isModuleInstalled($this->moduleName))
-		{
-			/**
-			 * It's important to check if module class defines UnInstallDB method (it must unregister module)
-			 * Thus absent UnInstallDB indicates that the module does not support automatic uninstallation
-			 */
-			if ((new \ReflectionClass($module))->getMethod('UnInstallDB')->class !== get_class($module))
-			{
-				throw new ModuleException('Missing UnInstallDB method. This module does not support automatic uninstallation',
-					$this->moduleName);
-			}
-
-			/** @noinspection PhpVoidFunctionResultUsedInspection */
-			if (!$module->UnInstallFiles())
-			{
-				$output->writeln(sprintf('<info>%s::UnInstallFiles() returned false;</info>'));
-				if (BitrixException::hasException())
-				{
-					BitrixException::generate();
-				}
-			}
-
-			$module->UnInstallEvents();
-
-			/** @noinspection PhpVoidFunctionResultUsedInspection */
-			if (!$module->UnInstallDB())
-			{
-				$output->writeln(sprintf('<info>%s::UnInstallDB() returned false;</info>'));
-				if (BitrixException::hasException())
-				{
-					BitrixException::generate();
-				}
-			}
-
-			if (ModuleManager::isModuleInstalled($this->moduleName))
-			{
-				throw new ModuleException('Module was not unregistred', $this->moduleName);
-			}
-
-			$output->writeln(sprintf('Module %s uninstalled', $this->moduleName));
-		}
-		else
-		{
-			$output->writeln(sprintf('<comment>Module %s wasn\'t installed</comment>', $this->moduleName));
-		}
+		$module = new Module($input->getArgument('module'));
+		$module->uninstall();
+		$output->writeln(sprintf('uninstalled <info>%s</info>', $module->getName()));
 	}
 }

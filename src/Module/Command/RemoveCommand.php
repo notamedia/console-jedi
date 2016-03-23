@@ -6,11 +6,9 @@
 
 namespace Notamedia\ConsoleJedi\Module\Command;
 
-use Bitrix\Main\ModuleManager;
-use Symfony\Component\Console\Input\ArrayInput;
+use Notamedia\ConsoleJedi\Module\Module;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Command for module installation/register
@@ -24,10 +22,10 @@ class RemoveCommand extends ModuleCommand
 	 */
 	protected function configure()
 	{
+		parent::configure();
+
 		$this->setName('module:remove')
 			->setDescription('Uninstall and remove module folder from system');
-
-		parent::configure();
 	}
 
 	/**
@@ -35,28 +33,8 @@ class RemoveCommand extends ModuleCommand
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
-		if (ModuleManager::isModuleInstalled($this->moduleName))
-		{
-			$arguments = array(
-				'command' => 'module:unregister',
-				'module' => $this->moduleName,
-				'',
-			);
-			$unregisterInput = new ArrayInput($arguments);
-			$this->getApplication()->find('module:unregister')->run($unregisterInput, $output);
-		}
-
-		$path = getLocalPath('modules/' . $this->moduleName);
-
-		if ($path)
-		{
-			(new Filesystem())->remove($_SERVER['DOCUMENT_ROOT'] . $path);
-
-			$output->writeln(sprintf('Module %s removed', $this->moduleName));
-		}
-		else
-		{
-			$output->writeln(sprintf('<error>Module %s is not found</error>', $this->moduleName));
-		}
+		$module = new Module($input->getArgument('module'));
+		$module->remove();
+		$output->writeln(sprintf('removed <info>%s</info>', $module->getName()));
 	}
 }
