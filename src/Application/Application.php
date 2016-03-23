@@ -380,7 +380,7 @@ class Application extends \Symfony\Component\Console\Application
 
             $path = getLocalPath('/modules/' . $module . '/' . implode('/', $arFile) . '.php');
 
-            if (file_exists($path))
+            if ($path !== false)
             {
                 include_once $path;
             }
