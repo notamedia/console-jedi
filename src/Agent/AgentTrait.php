@@ -6,6 +6,8 @@
 
 namespace Notamedia\ConsoleJedi\Agent;
 
+use Bitrix\Main\Type\DateTime;
+
 /**
  * Trait helps make an agent from any class.
  *
@@ -63,6 +65,39 @@ trait AgentTrait
         $reflection = new \ReflectionClass(get_called_class());
 
         return $reflection->newInstanceArgs(static::$constructorArgs);
+    }
+
+    /**
+     * @param int $interval
+     * @param array $callChain
+     */
+    protected function pingAgent($interval, array $callChain)
+    {
+        if (!$this->isAgentMode())
+        {
+            return;
+        }
+
+        $name = $this->getAgentName($callChain);
+        $model = new \CAgent();
+
+        $rsAgent = $model->GetList([], ['NAME' => $name]);
+
+        if ($agent = $rsAgent->Fetch())
+        {
+            $dateCheck = DateTime::createFromTimestamp(time() + $interval * 60);
+            
+            $pingResult = $model->Update($agent['ID'], ['DATE_CHECK' => $dateCheck->toString()]);
+
+            if (!$pingResult)
+            {
+                // @todo warning
+            }
+        }
+        else
+        {
+            // @todo warning
+        }
     }
 
     /**

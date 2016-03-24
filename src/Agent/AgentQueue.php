@@ -6,6 +6,8 @@
 
 namespace Notamedia\ConsoleJedi\Agent;
 
+use Bitrix\Main\Type\DateTime;
+
 /**
  * Queue Bitrix agents.
  * 
@@ -51,9 +53,15 @@ class AgentQueue
         $interval = 86400, $checkTime = null, $active = 'Y', $execTime = null, $sort = null, $userId = false, 
         $existError = true)
     {
-        $agent = new \CAgent;
+        if ($execTime === null)
+        {
+            $execTime = new DateTime();
+            $execTime = $execTime->toString();
+        }
         
-        return $agent->AddAgent(
+        $model = new \CAgent;
+        
+        return $model->AddAgent(
             AgentHelper::getAgentName($className, $args, $callChain),
             $module, 
             $isPeriod,
