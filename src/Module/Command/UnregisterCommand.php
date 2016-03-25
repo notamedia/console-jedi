@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Command for module installation/register
+ * The command to remove a module
  *
  * @author Marat Shamshutdinov <m.shamshutdinov@gmail.com>
  */
