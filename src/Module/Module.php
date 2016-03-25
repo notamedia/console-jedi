@@ -118,34 +118,34 @@ class Module
 			 */
 			if ((new \ReflectionClass($moduleObject))->getMethod('InstallDB')->class !== get_class($moduleObject))
 			{
-				throw new Exception\ModuleException(
+				throw new Exception\ModuleInstallException(
 					'Missing InstallDB method. This module does not support automatic installation',
 					$this->name
 				);
 			}
 
-			if (!$moduleObject->InstallDB())
+			if (!$moduleObject->InstallDB() && BitrixException::hasException())
 			{
-				if (BitrixException::hasException())
-				{
-					BitrixException::generate();
-				}
+				throw new Exception\ModuleInstallException(
+					get_class($moduleObject) . '::InstallDB() returned false',
+					$this->name
+				);
 			}
 
 			$moduleObject->InstallEvents();
 
 			/** @noinspection PhpVoidFunctionResultUsedInspection */
-			if (!$moduleObject->InstallFiles())
+			if (!$moduleObject->InstallFiles() && BitrixException::hasException())
 			{
-				if (BitrixException::hasException())
-				{
-					BitrixException::generate();
-				}
+				throw new Exception\ModuleInstallException(
+					get_class($moduleObject) . '::InstallFiles() returned false',
+					$this->name
+				);
 			}
 
 			if (!$this->isInstalled())
 			{
-				throw new Exception\ModuleException(
+				throw new Exception\ModuleInstallException(
 					'Module was not registered. Probably it does not support automatic installation.',
 					$this->name
 				);
@@ -175,7 +175,7 @@ class Module
 					LANGUAGE_ID)
 				)
 				{
-					throw new Exception\ModuleException(sprintf('Error occurred: %s', $strError), $this->getName());
+					throw new Exception\ModuleLoadException($strError, $this->getName());
 				}
 			}
 		}
@@ -201,35 +201,35 @@ class Module
 			 */
 			if ((new \ReflectionClass($moduleObject))->getMethod('UnInstallDB')->class !== get_class($moduleObject))
 			{
-				throw new Exception\ModuleException(
+				throw new Exception\ModuleUninstallException(
 					'Missing UnInstallDB method. This module does not support automatic uninstallation',
 					$this->name
 				);
 			}
 
 			/** @noinspection PhpVoidFunctionResultUsedInspection */
-			if (!$moduleObject->UnInstallFiles())
+			if (!$moduleObject->UnInstallFiles() && BitrixException::hasException())
 			{
-				if (BitrixException::hasException())
-				{
-					BitrixException::generate();
-				}
+				throw new Exception\ModuleUninstallException(
+					get_class($moduleObject) . '::UnInstallFiles() returned false',
+					$this->name
+				);
 			}
 
 			$moduleObject->UnInstallEvents();
 
 			/** @noinspection PhpVoidFunctionResultUsedInspection */
-			if (!$moduleObject->UnInstallDB())
+			if (!$moduleObject->UnInstallDB() && BitrixException::hasException())
 			{
-				if (BitrixException::hasException())
-				{
-					BitrixException::generate();
-				}
+				throw new Exception\ModuleUninstallException(
+					get_class($moduleObject) . '::UnInstallFiles() returned false',
+					$this->name
+				);
 			}
 
 			if ($this->isInstalled())
 			{
-				throw new Exception\ModuleException('Module was not unregistered', $this->name);
+				throw new Exception\ModuleUninstallException('Module was not unregistered', $this->name);
 			}
 		}
 
@@ -273,7 +273,7 @@ class Module
 
 		if (!$this->isThirdParty())
 		{
-			throw new Exception\ModuleException('Kernel module updates are currently not supported.', $this->getName());
+			throw new Exception\ModuleUpdateException('Kernel module updates are currently not supported.', $this->getName());
 		}
 
 		// ensures module existence
@@ -296,7 +296,7 @@ class Module
 
 			// error
 			case "E":
-				throw new Exception\ModuleException($errorMessage, $this->getName());
+				throw new Exception\ModuleUpdateException($errorMessage, $this->getName());
 
 			// finished installing updates
 			case "F":
@@ -312,7 +312,7 @@ class Module
 
 		if (!\CUpdateClientPartner::UnGzipArchive($updateDir, $errorMessage, true))
 		{
-			throw new Exception\ModuleException('[CL02] UnGzipArchive failed. ' . $errorMessage, $this->getName());
+			throw new Exception\ModuleUpdateException('[CL02] UnGzipArchive failed. ' . $errorMessage, $this->getName());
 		}
 
 		$this->validateUpdate($updateDir);
@@ -345,7 +345,7 @@ class Module
 		}
 		else
 		{
-			throw new Exception\ModuleException('[CL04] UpdateStepModules failed. ' . $errorMessage, $this->getName());
+			throw new Exception\ModuleUpdateException('[CL04] UpdateStepModules failed. ' . $errorMessage, $this->getName());
 		}
 
 		return true;
@@ -361,7 +361,7 @@ class Module
 		$errorMessage = null;
 		if (!\CUpdateClientPartner::CheckUpdatability($updateDir, $errorMessage))
 		{
-			throw new Exception\ModuleException('[CL03] CheckUpdatability failed. ' . $errorMessage, $this->getName());
+			throw new Exception\ModuleUpdateException('[CL03] CheckUpdatability failed. ' . $errorMessage, $this->getName());
 		}
 
 		if (isset($updateDescription["DATA"]["#"]["ERROR"]))
@@ -371,7 +371,7 @@ class Module
 			{
 				$errorMessage .= "[" . $errorDescription["@"]["TYPE"] . "] " . $errorDescription["#"];
 			}
-			throw new Exception\ModuleException($errorMessage, $this->getName());
+			throw new Exception\ModuleUpdateException($errorMessage, $this->getName());
 		}
 	}
 
