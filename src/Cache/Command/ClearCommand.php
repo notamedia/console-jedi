@@ -60,7 +60,7 @@ class ClearCommand extends BitrixCommand
 
         if ($dir)
         {
-            $cache->CleanDir($dir);
+            $cache->cleanDir($dir);
             $output->writeln('<info>Bitrix cache by "/' . BX_ROOT . '/cache/' . $dir . '" dir was deleted</info>');
         }
 
