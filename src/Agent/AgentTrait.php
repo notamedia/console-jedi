@@ -13,7 +13,7 @@ use Bitrix\Main\Type\DateTime;
  *
  * Algorithm of agent execution:
  * 1. Bitrix launches static method `ClassName::agent()->%method%()`. Your agents should be registered through
- * `\Notamedia\ConsoleJedi\Agent\AgentQueue` in the same format: `\Vendor\Package\ClassName::agent()->%method%();`. 
+ * `\Notamedia\ConsoleJedi\Agent\AgentTask` in the same format: `\Vendor\Package\ClassName::agent()->%method%();`. 
  * All arguments from this method will be duplicated to the object constructor: 
  * `agent($arg1, …, $arg2)` → `__construct($arg1, …, $arg2)`.
  * 2. Create an object of agent class.
@@ -48,14 +48,14 @@ trait AgentTrait
      * Factory method for create object of agent class.
      *
      * Bitrix calls this method to run agent. Your agents should be registered through 
-     * `\Notamedia\ConsoleJedi\Agent\AgentQueue`. All arguments from this method should 
+     * `\Notamedia\ConsoleJedi\Agent\AgentTask`. All arguments from this method should 
      * be duplicated in the object constructor:
      *
      * `agent($arg1, …, $arg2)` → `__construct($arg1, …, $arg2)`.
      *
      * @return static
      * 
-     * @see AgentQueue
+     * @see AgentTask
      */
     public static function agent()
     {
@@ -134,7 +134,7 @@ trait AgentTrait
      */
     public function getAgentName(array $callChain)
     {
-        return AgentHelper::getAgentName(get_called_class(), static::$constructorArgs, $callChain);
+        return AgentHelper::createName(get_called_class(), static::$constructorArgs, $callChain);
     }
 
     /**

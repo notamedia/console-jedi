@@ -25,7 +25,7 @@ class RunCommand extends BitrixCommand
         parent::configure();
 
         $this->setName('agent:run')
-            ->setDescription('Runs execution of Agents');
+            ->setDescription('Runs execution of agents');
     }
 
     /**

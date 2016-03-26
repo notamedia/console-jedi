@@ -6,6 +6,8 @@
 
 namespace Notamedia\ConsoleJedi\Agent;
 
+use Bitrix\Main\ArgumentTypeException;
+
 /**
  * Agent helpers.
  * 
@@ -14,15 +16,17 @@ namespace Notamedia\ConsoleJedi\Agent;
 class AgentHelper
 {
     /**
-     * Gets agent name. Use to return this name from the executed method of agent.
+     * Creates and returns agent name by class name and parameters. 
+     * Use to return this name from the executed method of agent.
      * 
      * @param string $className Agent class name.
      * @param array $args Arguments for `__constructor` of agent class.
      * @param array $callChain
      *
      * @return string
+     * @throws ArgumentTypeException
      */
-    public static function getAgentName($className, array $args = [], array $callChain = [])
+    public static function createName($className, array $args = [], array $callChain = [])
     {
         $chain = '';
 
@@ -30,6 +34,11 @@ class AgentHelper
         {
             foreach ($callChain as $method => $methodArgs)
             {
+                if (!is_array($methodArgs))
+                {
+                    throw new ArgumentTypeException('callChain', 'array');
+                }
+                
                 $chain .= '->' . $method . '(' . static::convertArgsToString($methodArgs) . ')';
             }
         }
