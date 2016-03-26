@@ -10,7 +10,7 @@ use Bitrix\Main\DB\ConnectionException;
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
 use Notamedia\ConsoleJedi\Agent\Command\OnCronCommand;
-use Notamedia\ConsoleJedi\Agent\Command\RunCommand;
+use Notamedia\ConsoleJedi\Agent\Command\ExecuteCommand;
 use Notamedia\ConsoleJedi\Application\Exception\ConfigurationException;
 use Notamedia\ConsoleJedi\Cache\Command\ClearCommand;
 use Notamedia\ConsoleJedi\Environment\Command\InitCommand;
@@ -151,7 +151,7 @@ class Application extends \Symfony\Component\Console\Application
     {
         return [
             new OnCronCommand(),
-            new RunCommand(),
+            new ExecuteCommand(),
             new ClearCommand(),
             new InitCommand()
         ];
