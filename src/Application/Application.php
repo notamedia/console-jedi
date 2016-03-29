@@ -10,7 +10,8 @@ use Bitrix\Main\DB\ConnectionException;
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
 use Notamedia\ConsoleJedi\Agent\Command\OnCronCommand;
-use Notamedia\ConsoleJedi\Agent\Command\RunCommand;
+use Notamedia\ConsoleJedi\Agent\Command\ExecuteCommand;
+use Notamedia\ConsoleJedi\Application\Exception\ConfigurationException;
 use Notamedia\ConsoleJedi\Cache\Command\ClearCommand;
 use Notamedia\ConsoleJedi\Environment\Command\InitCommand;
 use Notamedia\ConsoleJedi\Module\Command as Module;
@@ -53,7 +54,7 @@ class Application extends \Symfony\Component\Console\Application
     /**
      * @var null|string
      */
-    protected $documentRoot = null;
+    private $documentRoot = null;
     /**
      * @var null|array
      */
@@ -111,7 +112,7 @@ class Application extends \Symfony\Component\Console\Application
             {
                 case static::BITRIX_STATUS_UNAVAILABLE:
                     $output->writeln(PHP_EOL . sprintf('<error>No Bitrix kernel found in %s.</error> ' 
-                            . 'Please run <info>env:init</info> command to configure', $this->documentRoot));
+                            . 'Please run <info>env:init</info> command to configure', $this->getDocumentRoot()));
                     break;
 
                 case static::BITRIX_STATUS_NO_DB_CONNECTION:
@@ -144,7 +145,7 @@ class Application extends \Symfony\Component\Console\Application
 
     /**
      * Gets Bitrix console commands from this package.
-     *
+     * 
      * @return Command[]
      */
     protected function getBitrixCommands()
@@ -152,14 +153,13 @@ class Application extends \Symfony\Component\Console\Application
         return array_merge(
             [
                 new OnCronCommand(),
-                new RunCommand(),
+                new ExecuteCommand(),
                 new ClearCommand(),
                 new InitCommand(),
             ],
             Module\ModuleCommand::getCommands()
         );
     }
-
 
     /**
      * Gets console commands from modules.
@@ -174,29 +174,18 @@ class Application extends \Symfony\Component\Console\Application
 
         foreach (ModuleManager::getInstalledModules() as $module)
         {
-            $moduleBitrixDir = $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/modules/' . $module['ID'];
-            $moduleLocalDir = $_SERVER['DOCUMENT_ROOT'] . '/local/modules/' . $module['ID'];
-            $cliFile = '/cli.php';
+            $cliFile = getLocalPath('modules/' . $module['ID'] . '/cli.php');
 
-            if (is_file($moduleBitrixDir . $cliFile))
+            if ($cliFile === false)
             {
-                $cliFile = $moduleBitrixDir . $cliFile;
+                continue;
             }
-            elseif (is_file($moduleLocalDir . $cliFile))
-            {
-                $cliFile = $moduleLocalDir . $cliFile;
-            }
-            else
+            elseif (!Loader::includeModule($module['ID']))
             {
                 continue;
             }
 
-            if (!Loader::includeModule($module['ID']))
-            {
-                continue;
-            }
-
-            $config = include_once $cliFile;
+            $config = include_once $this->getDocumentRoot() . $cliFile;
 
             if (isset($config['commands']) && is_array($config['commands']))
             {
@@ -214,7 +203,7 @@ class Application extends \Symfony\Component\Console\Application
      *
      * @return bool
      * 
-     * @throws \Exception
+     * @throws ConfigurationException
      */
     public function loadConfiguration($path = self::CONFIG_DEFAULT_FILE)
     {
@@ -227,18 +216,18 @@ class Application extends \Symfony\Component\Console\Application
         
         if (!is_array($this->configuration))
         {
-            throw new \Exception('Configuration file ' . $path . ' must return an array');
+            throw new ConfigurationException('Configuration file ' . $path . ' must return an array');
         }
 
         $filesystem = new Filesystem();
         
         if ($filesystem->isAbsolutePath($this->configuration['web-dir']))
         {
-            $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $this->configuration['web-dir'];
+            $this->setDocumentRoot($this->configuration['web-dir']);
         }
         else
         {
-            $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $this->getRoot() . '/' . $this->configuration['web-dir'];
+            $this->setDocumentRoot($this->getRoot() . '/' . $this->configuration['web-dir']);
         }
 
         if (!is_dir($_SERVER['DOCUMENT_ROOT']))
@@ -266,7 +255,11 @@ class Application extends \Symfony\Component\Console\Application
      */
     public function initializeBitrix()
     {
-        if (!$this->checkBitrix())
+        if ($this->bitrixStatus === static::BITRIX_STATUS_COMPLETE)
+        {
+            return static::BITRIX_STATUS_COMPLETE;
+        }
+        elseif (!$this->checkBitrix())
         {
             return static::BITRIX_STATUS_UNAVAILABLE;
         }
@@ -339,6 +332,64 @@ class Application extends \Symfony\Component\Console\Application
     }
 
     /**
+     * Autoloader classes of the tests. 
+     * 
+     * Initializes Bitrix kernel, finds and connects files in directory `vendor.module/tests/` 
+     * by pattern `<class>test.php` and loading modules of tests.
+     * 
+     * @throws ConfigurationException
+     */
+    public function autoloadTests()
+    {
+        if ($this->getConfiguration() === null)
+        {
+            $this->loadConfiguration();
+        }
+        
+        $this->initializeBitrix();
+        
+        spl_autoload_register(function ($className) {
+            $file = ltrim($className, "\\");
+            $file = strtr($file, Loader::ALPHA_UPPER, Loader::ALPHA_LOWER);
+            $file = str_replace('\\', '/', $file);
+
+            if (substr($file, -5) === 'table')
+            {
+                $file = substr($file, 0, -5);
+            }
+
+            $arFile = explode('/', $file);
+
+            if (preg_match("#[^\\\\/a-zA-Z0-9_]#", $file))
+            {
+                return false;
+            }
+            elseif ($arFile[0] === 'bitrix')
+            {
+                return false;
+            }
+            elseif ($arFile[2] !== 'tests')
+            {
+                return false;
+            }
+
+            $module = array_shift($arFile) . '.' . array_shift($arFile);
+
+            if (!Loader::includeModule($module))
+            {
+                return false;
+            }
+
+            $path = getLocalPath('/modules/' . $module . '/' . implode('/', $arFile) . '.php');
+
+            if ($path !== false)
+            {
+                include_once $this->getDocumentRoot() . $path;
+            }
+        });
+    }
+
+    /**
      * Gets root directory from which are running Console Jedi.
      * 
      * @return string
@@ -346,5 +397,25 @@ class Application extends \Symfony\Component\Console\Application
     public function getRoot()
     {
         return getcwd();
+    }
+
+    /**
+     * Sets path to the document root of site.
+     * 
+     * @param string $dir Path to document root.
+     */
+    public function setDocumentRoot($dir)
+    {
+        $_SERVER['DOCUMENT_ROOT'] = $this->documentRoot = $dir;
+    }
+
+    /**
+     * Gets document root of site.
+     * 
+     * @return null|string
+     */
+    public function getDocumentRoot()
+    {
+        return $this->documentRoot;
     }
 }
