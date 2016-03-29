@@ -14,6 +14,7 @@ use Notamedia\ConsoleJedi\Agent\Command\ExecuteCommand;
 use Notamedia\ConsoleJedi\Application\Exception\ConfigurationException;
 use Notamedia\ConsoleJedi\Cache\Command\ClearCommand;
 use Notamedia\ConsoleJedi\Environment\Command\InitCommand;
+use Notamedia\ConsoleJedi\Module\Command as Module;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -149,12 +150,15 @@ class Application extends \Symfony\Component\Console\Application
      */
     protected function getBitrixCommands()
     {
-        return [
-            new OnCronCommand(),
-            new ExecuteCommand(),
-            new ClearCommand(),
-            new InitCommand()
-        ];
+        return array_merge(
+            [
+                new OnCronCommand(),
+                new ExecuteCommand(),
+                new ClearCommand(),
+                new InitCommand(),
+            ],
+            Module\ModuleCommand::getCommands()
+        );
     }
 
     /**
@@ -265,6 +269,15 @@ class Application extends \Symfony\Component\Console\Application
 
         try
         {
+            /**
+             * Declare global legacy variables
+             *
+             * Including kernel here makes them local by default but some modules depend on them in installation class
+             */
+            global
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $DB, $DBType, $DBHost, $DBLogin, $DBPassword, $DBName, $DBDebug, $DBDebugToFile, $APPLICATION, $USER, $DBSQLServerType;
+
             require_once $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_before.php';
             
             if (defined('B_PROLOG_INCLUDED') && B_PROLOG_INCLUDED === true)

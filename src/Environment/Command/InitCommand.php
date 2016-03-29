@@ -11,13 +11,17 @@ use Bitrix\Main\Config\Configuration;
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\IO\File;
 use Bitrix\Main\Loader;
-use Bitrix\Main\LoaderException;
-use Bitrix\Main\ModuleManager;
 use Notamedia\ConsoleJedi\Application\Command\Command;
+use Notamedia\ConsoleJedi\Application\Exception\BitrixException;
+use Notamedia\ConsoleJedi\Module\Command\ModuleCommand;
+use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
+use Notamedia\ConsoleJedi\Module\Exception\ModuleInstallException;
+use Notamedia\ConsoleJedi\Module\Module;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -209,31 +213,76 @@ class InitCommand extends Command
 
     /**
      * Installation modules.
-     * 
+     *
      * @param InputInterface $input
      * @param OutputInterface $output
      * @param array $modules
-     *
-     * @throws LoaderException
+     * @throws BitrixException
+     * @throws \LogicException
+     * @throws ModuleException
      */
     protected function configureModules(InputInterface $input, OutputInterface $output, array $modules)
     {
-        foreach ($modules as $module)
+        $app = $this->getApplication();
+        if ($app->getConfiguration())
         {
-            if (!ModuleManager::isModuleInstalled($module))
-            {
-                ModuleManager::registerModule($module);
-            }
-            
-            if (!Loader::includeModule($module))
-            {
-                $output->writeln('   ' . $module . ': <error>FAILED</error>');
-            }
-            else
-            {
-                $output->writeln('   ' . $module);
-            }
+            $app->addCommands(ModuleCommand::getCommands());
+            if ($app->getBitrixStatus() != \Notamedia\ConsoleJedi\Application\Application::BITRIX_STATUS_COMPLETE)
+                throw new BitrixException('Bitrix core is not available');
         }
+        else
+        {
+            throw new BitrixException('No configuration loaded');
+        }
+
+        if (!is_array($modules))
+        {
+            throw new \LogicException('Incorrect modules configuration');
+        }
+
+        if (!count($modules))
+        {
+            return;
+        }
+
+        $bar = new ProgressBar($output, count($modules));
+        $bar->setRedrawFrequency(1);
+        $bar->setFormat('verbose');
+
+        foreach ($modules as $moduleName)
+        {
+            $message = "\r" . '   module:load ' . $moduleName . ': ';
+
+            try
+            {
+                if (isset($bar))
+                {
+                    $bar->setMessage($message);
+                    $bar->display();
+                }
+
+                (new Module($moduleName))->load()->register();
+
+                $bar->clear();
+                $output->writeln($message . '<info>ok</info>');
+            }
+            catch (ModuleInstallException $e)
+            {
+                $bar->clear();
+                $output->writeln($e->getMessage(), OutputInterface::VERBOSITY_VERBOSE);
+                $output->writeln($message . '<comment>not registered</comment> (install it in admin panel)');
+            }
+            catch (ModuleException $e)
+            {
+                $bar->clear();
+                $output->writeln($e->getMessage(), OutputInterface::VERBOSITY_VERBOSE);
+                $output->writeln($message . '<error>FAILED</error>');
+            }
+            $bar->advance();
+        }
+        $bar->finish();
+        $bar->clear();
+        $output->write("\r");
     }
 
     /**
