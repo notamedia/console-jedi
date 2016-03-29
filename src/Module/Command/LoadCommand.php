@@ -30,7 +30,7 @@ class LoadCommand extends ModuleCommand
 		$this->setName('module:load')
 			->setDescription('Load and install module from Marketplace')
 			->addOption('no-update', 'nu', InputOption::VALUE_NONE, 'Don\' update module')
-			->addOption('no-install', 'ni', InputOption::VALUE_NONE, 'Load only, don\' register module')
+			->addOption('no-register', 'ni', InputOption::VALUE_NONE, 'Load only, don\' register module')
 			->addOption('beta', 'b', InputOption::VALUE_NONE, 'Allow the installation of beta releases');
 	}
 
@@ -69,9 +69,9 @@ class LoadCommand extends ModuleCommand
 			}
 		}
 
-		if (!$input->getOption('no-install'))
+		if (!$input->getOption('no-register'))
 		{
-			$module->install();
+			$module->register();
 		}
 
 		$output->writeln(sprintf('installed <info>%s</info>', $module->getName()));

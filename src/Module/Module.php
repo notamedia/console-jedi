@@ -87,7 +87,7 @@ class Module
 	 *
 	 * @return bool
 	 */
-	public function isInstalled()
+	public function isRegistered()
 	{
 		return ModuleManager::isModuleInstalled($this->name) && $this->exist();
 	}
@@ -106,9 +106,9 @@ class Module
 	 * @throws Exception\ModuleException
 	 * @throws BitrixException
 	 */
-	public function install()
+	public function register()
 	{
-		if (!$this->isInstalled())
+		if (!$this->isRegistered())
 		{
 			$moduleObject =& $this->getObject();
 
@@ -143,7 +143,7 @@ class Module
 				);
 			}
 
-			if (!$this->isInstalled())
+			if (!$this->isRegistered())
 			{
 				throw new Exception\ModuleInstallException(
 					'Module was not registered. Probably it does not support automatic installation.',
@@ -162,7 +162,7 @@ class Module
 	 */
 	public function load()
 	{
-		if (!$this->isInstalled())
+		if (!$this->isRegistered())
 		{
 			if (!$this->exist())
 			{
@@ -189,11 +189,11 @@ class Module
 	 * @throws Exception\ModuleException
 	 * @throws BitrixException
 	 */
-	public function uninstall()
+	public function unRegister()
 	{
 		$moduleObject = $this->getObject();
 
-		if ($this->isInstalled())
+		if ($this->isRegistered())
 		{
 			/**
 			 * It's important to check if module class defines UnInstallDB method (it should unregister module)
@@ -227,7 +227,7 @@ class Module
 				);
 			}
 
-			if ($this->isInstalled())
+			if ($this->isRegistered())
 			{
 				throw new Exception\ModuleUninstallException('Module was not unregistered', $this->name);
 			}
@@ -241,9 +241,9 @@ class Module
 	 */
 	public function remove()
 	{
-		if ($this->isInstalled())
+		if ($this->isRegistered())
 		{
-			$this->uninstall();
+			$this->unRegister();
 		}
 
 		$path = getLocalPath('modules/' . $this->getName());

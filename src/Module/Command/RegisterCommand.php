@@ -34,7 +34,7 @@ class RegisterCommand extends ModuleCommand
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
 		$module = new Module($input->getArgument('module'));
-		$module->install();
-		$output->writeln(sprintf('installed <info>%s</info>', $module->getName()));
+		$module->register();
+		$output->writeln(sprintf('registered <info>%s</info>', $module->getName()));
 	}
 }

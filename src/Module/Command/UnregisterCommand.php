@@ -34,7 +34,7 @@ class UnregisterCommand extends ModuleCommand
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
 		$module = new Module($input->getArgument('module'));
-		$module->uninstall();
-		$output->writeln(sprintf('uninstalled <info>%s</info>', $module->getName()));
+		$module->unRegister();
+		$output->writeln(sprintf('unregistered <info>%s</info>', $module->getName()));
 	}
 }

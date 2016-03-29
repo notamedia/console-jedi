@@ -255,7 +255,7 @@ class InitCommand extends Command
                     $bar->display();
                 }
 
-                (new Module($moduleName))->load()->install();
+                (new Module($moduleName))->load()->register();
 
                 $bar->advance();
                 $bar->clear();
