@@ -239,6 +239,11 @@ class InitCommand extends Command
             throw new \LogicException('Incorrect modules configuration');
         }
 
+        if (!count($modules))
+        {
+            return;
+        }
+
         $bar = new ProgressBar($output, count($modules));
         $bar->setRedrawFrequency(1);
         $bar->setFormat('verbose');
