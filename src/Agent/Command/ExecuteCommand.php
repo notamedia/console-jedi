@@ -11,11 +11,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Run agents.
+ * Execution of tasks from agents queue.
  * 
  * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
-class RunCommand extends BitrixCommand
+class ExecuteCommand extends BitrixCommand
 {
     /**
      * {@inheritdoc}
@@ -24,8 +24,8 @@ class RunCommand extends BitrixCommand
     {
         parent::configure();
 
-        $this->setName('agent:run')
-            ->setDescription('Runs execution of Agents');
+        $this->setName('agent:execute')
+            ->setDescription('Execution of tasks from agents queue');
     }
 
     /**

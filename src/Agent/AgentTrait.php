@@ -6,13 +6,15 @@
 
 namespace Notamedia\ConsoleJedi\Agent;
 
+use Bitrix\Main\Type\DateTime;
+
 /**
  * Trait helps make an agent from any class.
  *
  * Algorithm of agent execution:
- * 1. Bitrix launches static method `Agent::agent()->%method%()`. Your agents should be registered in the same format:
- * `\Vendor\Packeage\ClassName::agent()->%agent%();`. All arguments from this method will be duplicated to the object 
- * constructor:
+ * 1. Bitrix launches static method `ClassName::agent()->%method%()`. Your agents should be registered through
+ * `\Notamedia\ConsoleJedi\Agent\AgentTask` in the same format: `\Vendor\Package\ClassName::agent()->%method%();`. 
+ * All arguments from this method will be duplicated to the object constructor: 
  * `agent($arg1, …, $arg2)` → `__construct($arg1, …, $arg2)`.
  * 2. Create an object of agent class.
  * 3. Call execution method in agent class.
@@ -45,15 +47,15 @@ trait AgentTrait
     /**
      * Factory method for create object of agent class.
      *
-     * Bitrix calls this method to run agent. Your agents should be registered  through 
-     * `\Notamedia\ConsoleJedi\Agent\AgentQueue`. All arguments from this method should 
+     * Bitrix calls this method to run agent. Your agents should be registered through 
+     * `\Notamedia\ConsoleJedi\Agent\AgentTask`. All arguments from this method should 
      * be duplicated in the object constructor:
      *
      * `agent($arg1, …, $arg2)` → `__construct($arg1, …, $arg2)`.
      *
      * @return static
      * 
-     * @see AgentQueue
+     * @see AgentTask
      */
     public static function agent()
     {
@@ -66,7 +68,65 @@ trait AgentTrait
     }
 
     /**
+     * Ping from the agent to inform that it still works correctly. Use this method if your agent 
+     * works more 10 minutes, otherwise Bitrix will be consider your agent as non-working.
+     * 
+     * Usage:
+     * ```php
+     * public function executeAgent($param1, $param2)
+     * {
+     *      // start a heavy (big) cycle
+     * 
+     *          $this->pingAgent(20, ['executeAgent => [$param1, $param2]]);
+     * 
+     *      // end of cycle
+     * }
+     * ```
+     * 
+     * @param int $interval The time in minutes after which the agent will be considered non-working.
+     * @param array $callChain Array with the call any methods from Agent class.
+     */
+    protected function pingAgent($interval, array $callChain)
+    {
+        if (!$this->isAgentMode())
+        {
+            return;
+        }
+
+        $name = $this->getAgentName($callChain);
+        $model = new \CAgent();
+
+        $rsAgent = $model->GetList([], ['NAME' => $name]);
+
+        if ($agent = $rsAgent->Fetch())
+        {
+            $dateCheck = DateTime::createFromTimestamp(time() + $interval * 60);
+            
+            $pingResult = $model->Update($agent['ID'], ['DATE_CHECK' => $dateCheck->toString()]);
+
+            if (!$pingResult)
+            {
+                // @todo warning
+            }
+        }
+        else
+        {
+            // @todo warning
+        }
+    }
+
+    /**
      * Gets agent name. Use to return this name from the executed method of agent.
+     * 
+     * Usage:
+     * ```php
+     * public function executeAgent($param1, $param2)
+     * {
+     *      // main logic
+     *
+     *      return $this->getAgentName(['executeAgent => [$param1, $param2]]);
+     * }
+     * ```
      * 
      * @param array $callChain Array with the call any methods from Agent class.
      * 
@@ -74,7 +134,7 @@ trait AgentTrait
      */
     public function getAgentName(array $callChain)
     {
-        return AgentHelper::getAgentName(get_called_class(), static::$constructorArgs, $callChain);
+        return AgentHelper::createName(get_called_class(), static::$constructorArgs, $callChain);
     }
 
     /**

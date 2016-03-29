@@ -44,8 +44,8 @@ class ClearCommand extends BitrixCommand
         if (empty($dir) && empty($tag))
         {
             Application::getInstance()->getManagedCache()->cleanAll();
-            $cache->CleanDir();
-            $cache->CleanDir(false, 'stack_cache');
+            $cache->cleanDir();
+            $cache->cleanDir(false, 'stack_cache');
             StaticHtmlCache::getInstance()->deleteAll();
 
             if (Cache::clearCache(true))
@@ -60,13 +60,13 @@ class ClearCommand extends BitrixCommand
 
         if ($dir)
         {
-            $cache->CleanDir($dir);
+            $cache->cleanDir($dir);
             $output->writeln('<info>Bitrix cache by "/' . BX_ROOT . '/cache/' . $dir . '" dir was deleted</info>');
         }
 
         if ($tag)
         {
-            Application::getInstance()->getTaggedCache()->ClearByTag($tag);
+            Application::getInstance()->getTaggedCache()->clearByTag($tag);
             $output->writeln('<info>Bitrix cache by tag "' . $tag . '" was deleted</info>');
         }
     }
