@@ -269,6 +269,7 @@ class InitCommand extends Command
             }
         }
         $bar->finish();
+        $output->writeln('');
     }
 
     /**
