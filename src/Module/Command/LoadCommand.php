@@ -6,6 +6,7 @@
 
 namespace Notamedia\ConsoleJedi\Module\Command;
 
+use Notamedia\ConsoleJedi\Module\Exception\ModuleInstallException;
 use Notamedia\ConsoleJedi\Module\Module;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -71,7 +72,18 @@ class LoadCommand extends ModuleCommand
 
 		if (!$input->getOption('no-register'))
 		{
-			$module->register();
+			try
+			{
+				$module->register();
+			}
+			catch (ModuleInstallException $e)
+			{
+				if (OutputInterface::VERBOSITY_VERBOSE === $output->getVerbosity())
+				{
+					$output->writeln(sprintf('<comment>%s</comment>', $e->getMessage()));
+				}
+				$output->writeln(sprintf('Module loaded, but <error>not registered</error>. You need to do it yourself in admin panel.', $module->getName()));
+			}
 		}
 
 		$output->writeln(sprintf('installed <info>%s</info>', $module->getName()));
