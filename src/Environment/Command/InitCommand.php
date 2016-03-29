@@ -15,6 +15,7 @@ use Notamedia\ConsoleJedi\Application\Command\Command;
 use Notamedia\ConsoleJedi\Application\Exception\BitrixException;
 use Notamedia\ConsoleJedi\Module\Command\ModuleCommand;
 use Notamedia\ConsoleJedi\Module\Exception\ModuleException;
+use Notamedia\ConsoleJedi\Module\Exception\ModuleInstallException;
 use Notamedia\ConsoleJedi\Module\Module;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -262,9 +263,14 @@ class InitCommand extends Command
 
                 (new Module($moduleName))->load()->register();
 
-                $bar->advance();
                 $bar->clear();
                 $output->writeln($message . '<info>ok</info>');
+            }
+            catch (ModuleInstallException $e)
+            {
+                $bar->clear();
+                $output->writeln($e->getMessage(), OutputInterface::VERBOSITY_VERBOSE);
+                $output->writeln($message . '<comment>not registered</comment> (install it in admin panel)');
             }
             catch (ModuleException $e)
             {
@@ -272,9 +278,11 @@ class InitCommand extends Command
                 $output->writeln($e->getMessage(), OutputInterface::VERBOSITY_VERBOSE);
                 $output->writeln($message . '<error>FAILED</error>');
             }
+            $bar->advance();
         }
         $bar->finish();
-        $output->writeln('');
+        $bar->clear();
+        $output->write("\r");
     }
 
     /**
