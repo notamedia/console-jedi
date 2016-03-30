@@ -7,11 +7,11 @@
  *      // License key for Bitrix
  *      'licenseKey' => 'NFR-123-456',
  *
- *      // Modules to be installed
+ *      // Modules to be installed.
+ *      // Warning: install the modules using DB migration. Install the modules
+ *      // using the settings of the environment, only for dev environment.
  *      'modules' => [
- *          'project.main',
- *          'bex.bbc',
- *          'digitalwand.admin_helper',
+ *          'vendor.debug'
  *      ],
  *
  *      // Options for modules
