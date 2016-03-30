@@ -6,6 +6,7 @@
 
 namespace Notamedia\ConsoleJedi\Module\Command;
 
+use Notamedia\ConsoleJedi\Application\CanRestartTrait;
 use Notamedia\ConsoleJedi\Module\Module;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -18,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class UpdateCommand extends ModuleCommand
 {
-	use CanRestart;
+	use CanRestartTrait;
 
 	/**
 	 * {@inheritdoc}

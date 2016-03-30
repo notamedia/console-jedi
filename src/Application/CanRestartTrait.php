@@ -4,7 +4,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Notamedia\ConsoleJedi\Module\Command;
+namespace Notamedia\ConsoleJedi\Application;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @author Marat Shamshutdinov <m.shamshutdinov@gmail.com>
  */
-trait CanRestart
+trait CanRestartTrait
 {
 	/**
 	 * Executes another copy of console process to continue updates
