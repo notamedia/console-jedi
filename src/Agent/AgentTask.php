@@ -32,7 +32,7 @@ use Bitrix\Main\Type\DateTime;
 class AgentTask
 {
     protected $class;
-    protected $constructorArgs;
+    protected $constructorArgs = [];
     protected $callChain;
     protected $module;
     protected $interval;
