@@ -89,6 +89,11 @@ class Application extends \Symfony\Component\Console\Application
             {
                 $this->add($bitrixCommand);
             }
+            
+            foreach ($this->getConfiguration()['commands'] as $command)
+            {
+                $this->add($command);
+            }
         }
 
         if ($this->isBitrixLoaded() && $this->getConfiguration()['useModules'] === true)
