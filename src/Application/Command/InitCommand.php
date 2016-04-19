@@ -179,12 +179,12 @@ class InitCommand extends Command
             }
         }
         
-        $question = new Question('    <info>Enter path to web directory (document root of main site):</info> ');
+        $question = new Question('    <info>Enter path to web directory relative to ('.getcwd().'):</info> ');
         $question->setValidator(function ($answer) {
-            if (!is_dir($answer))
+            /*if (!is_dir($answer))
             {
                 throw new \RuntimeException('Directory "' . $answer . '" is missing');
-            }
+            }*/
             
             return $answer;
         });
