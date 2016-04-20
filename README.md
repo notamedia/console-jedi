@@ -14,4 +14,5 @@ Console application for Bitrix CMS.
 composer require notamedia/console-jedi
 
 ./vendor/bin/jedi init
+Enter path to web directory relative to (/home/bitrix/www/):
 ```
