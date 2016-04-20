@@ -178,19 +178,35 @@ class InitCommand extends Command
                 return;
             }
         }
+
+        $fs = new Filesystem();
         
-        $question = new Question('    <info>Enter path to web directory relative to ('.getcwd().'):</info> ');
-        $question->setValidator(function ($answer) {
-            /*if (!is_dir($answer))
+        $question = new Question('    <info>Enter path to web directory relative to ' 
+            . $this->getApplication()->getRoot(). ':</info> ' . PHP_EOL 
+            . '    (or do not specify if you are already in the web directory)' . PHP_EOL);
+        
+        $question->setValidator(function ($answer) use ($fs) {
+            $path = $answer;
+            
+            if ($answer === null)
             {
-                throw new \RuntimeException('Directory "' . $answer . '" is missing');
-            }*/
+                $path = $this->getApplication()->getRoot();
+            }
+            elseif (!$fs->isAbsolutePath($answer))
+            {
+                $path = $this->getApplication()->getRoot() . '/' . $answer;
+            }
+            
+            if (!is_dir($path))
+            {
+                throw new \RuntimeException('Directory "' . $path . '" is missing');
+            }
             
             return $answer;
         });
+        
         $webDir = $this->questionHelper->ask($input, $output, $question);
 
-        $fs = new Filesystem();
         $content = file_get_contents($this->tmplDir . '/.jedi.php');
         $content = str_replace(
             ['%web-dir%', '%env-dir%'], 

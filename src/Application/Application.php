@@ -223,11 +223,7 @@ class Application extends \Symfony\Component\Console\Application
         {
             throw new ConfigurationException('Configuration file ' . $path . ' must return an array');
         }
-
-        //TODO-fox: Проверка на указание в качестве относительного пути /
-        if ($this->configuration['web-dir'] == '/')
-            $this->configuration['web-dir'] = '';
-
+        
         $filesystem = new Filesystem();
         
         if ($filesystem->isAbsolutePath($this->configuration['web-dir']))

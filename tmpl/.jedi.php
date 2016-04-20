@@ -2,8 +2,8 @@
 /**
  * Configuration file of Console Jedi application.
  * 
- * @param string 'web-dir' Path to web directory (document root of main site).
- * @param string 'env-dir' Path to directory with environments settings.
+ * @param string 'web-dir' Relative path to web directory (document root of main site).
+ * @param string 'env-dir' Relative path to directory with environments settings.
  * @param bool 'useModules' Find and include commands from Bitrix modules.
  * @param array 'commands' Your commands that could not be included from modules.
  * 
@@ -12,7 +12,7 @@
  */
 
 return [
-    'web-dir' => '%web-dir%', //Заполнять только в случае если у вас многосайтовая система. Указывать только относительный путь до папки сайта
+    'web-dir' => '%web-dir%',
     'env-dir' => '%env-dir%',
     'useModules' => true,
     'commands' => [
