@@ -8,10 +8,12 @@
 
 ## Функционал «Джедая»
 
+* [Continuous integration](ci.md)
 * [Настройки окружений](environment.md)
 * [Модули](module.md)
 * [Кеширование](cache.md)
 * [Агенты](agent.md)
+* [Поиск](search.md)
 
 ---
 
