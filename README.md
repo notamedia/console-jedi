@@ -6,7 +6,16 @@
 [![Total Downloads](https://poser.pugx.org/notamedia/console-jedi/downloads)](https://packagist.org/packages/notamedia/console-jedi) 
 [![License](https://poser.pugx.org/notamedia/console-jedi/license)](https://packagist.org/packages/notamedia/console-jedi)
 
-Console application for Bitrix CMS.
+Console application for administration and support projects on Bitrix CMS. 
+
+Features:
+
+* Continuous integration.
+* Environments settings.
+* Managing caching, modules, search system.
+* Nice API for creating agents.
+
+Made based on Symfony Console ♥.
 
 ## Installation
 
@@ -15,3 +24,7 @@ composer require notamedia/console-jedi
 
 ./vendor/bin/jedi init
 ```
+
+## Documentation
+
+* [По-русски](docs/ru/README.md)
