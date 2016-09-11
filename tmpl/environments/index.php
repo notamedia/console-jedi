@@ -7,10 +7,10 @@
  *
  * ```php
  * return [
- *      '<key>' => [
- *          'name' => '<Environment name>',
- *          'path' => '<dir-path>'
- *      ]
+ *  '<type>' => [
+ *      'name' => '<Full name>',
+ *      'path' => '<directory>'
+ *  ]
  * ];
  * ```
  */

@@ -1,6 +1,6 @@
 <?php
 /**
- * Example settings file config.php:
+ * Example of settings file config.php:
  *
  * ```php
  * return [
