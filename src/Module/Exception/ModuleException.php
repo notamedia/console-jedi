@@ -8,15 +8,15 @@ namespace Notamedia\ConsoleJedi\Module\Exception;
 
 class ModuleException extends \RuntimeException
 {
-	/**
-	 * ModuleException constructor.
-	 *
-	 * @param string $message
-	 * @param int $moduleName
-	 * @param \Exception|null $previous
-	 */
-	public function __construct($message, $moduleName, \Exception $previous = null)
-	{
-		parent::__construct("[$moduleName] " . $message, 0, $previous);
-	}
+    /**
+     * ModuleException constructor.
+     *
+     * @param string $message
+     * @param int $moduleName
+     * @param \Exception|null $previous
+     */
+    public function __construct($message, $moduleName, \Exception $previous = null)
+    {
+        parent::__construct("[$moduleName] " . $message, 0, $previous);
+    }
 }

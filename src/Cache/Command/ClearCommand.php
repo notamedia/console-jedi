@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Command for clear Bitrix cache.
- * 
+ *
  * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class ClearCommand extends BitrixCommand
@@ -41,31 +41,25 @@ class ClearCommand extends BitrixCommand
         $tag = $input->getOption('tag');
         $cache = Cache::createInstance();
 
-        if (empty($dir) && empty($tag))
-        {
+        if (empty($dir) && empty($tag)) {
             Application::getInstance()->getManagedCache()->cleanAll();
             $cache->cleanDir();
             $cache->cleanDir(false, 'stack_cache');
             StaticHtmlCache::getInstance()->deleteAll();
 
-            if (Cache::clearCache(true))
-            {
+            if (Cache::clearCache(true)) {
                 $output->writeln('<info>All Bitrix cache was deleted</info>');
-            }
-            else
-            {
+            } else {
                 $output->writeln('<error>Error deleting Bitrix cache</error>');
             }
         }
 
-        if ($dir)
-        {
+        if ($dir) {
             $cache->cleanDir($dir);
             $output->writeln('<info>Bitrix cache by "/' . BX_ROOT . '/cache/' . $dir . '" dir was deleted</info>');
         }
 
-        if ($tag)
-        {
+        if ($tag) {
             Application::getInstance()->getTaggedCache()->clearByTag($tag);
             $output->writeln('<info>Bitrix cache by tag "' . $tag . '" was deleted</info>');
         }

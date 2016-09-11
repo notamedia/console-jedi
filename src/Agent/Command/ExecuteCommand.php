@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Execution of tasks from agents queue.
- * 
+ *
  * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class ExecuteCommand extends BitrixCommand

@@ -32,8 +32,7 @@ trait CanRestartTrait
     protected function restartScript(InputInterface $input, OutputInterface $output)
     {
         $proc = popen('php -f ' . join(' ', $GLOBALS['argv']) . ' 2>&1', 'r');
-        while (!feof($proc))
-        {
+        while (!feof($proc)) {
             $output->write(fread($proc, 4096));
         }
 

@@ -10,15 +10,15 @@ use Bitrix\Main\ArgumentTypeException;
 
 /**
  * Agent helpers.
- * 
+ *
  * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class AgentHelper
 {
     /**
-     * Creates and returns agent name by class name and parameters. 
+     * Creates and returns agent name by class name and parameters.
      * Use to return this name from the executed method of agent.
-     * 
+     *
      * @param string $className Agent class name.
      * @param array $args Arguments for `__constructor` of agent class.
      * @param array $callChain
@@ -30,20 +30,17 @@ class AgentHelper
     {
         $chain = '';
 
-        if (!empty($callChain))
-        {
-            foreach ($callChain as $method => $methodArgs)
-            {
-                if (!is_array($methodArgs))
-                {
+        if (!empty($callChain)) {
+            foreach ($callChain as $method => $methodArgs) {
+                if (!is_array($methodArgs)) {
                     throw new ArgumentTypeException('callChain', 'array');
                 }
-                
+
                 $chain .= '->' . $method . '(' . static::convertArgsToString($methodArgs) . ')';
             }
         }
 
-        return '\\' . $className . '::agent(' . static::convertArgsToString($args). ')' . $chain . ';';
+        return '\\' . $className . '::agent(' . static::convertArgsToString($args) . ')' . $chain . ';';
     }
 
     protected static function convertArgsToString(array $args)

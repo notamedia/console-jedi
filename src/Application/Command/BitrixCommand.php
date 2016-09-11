@@ -8,7 +8,7 @@ namespace Notamedia\ConsoleJedi\Application\Command;
 
 /**
  * Base class for Bitrix console command.
- * 
+ *
  * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class BitrixCommand extends Command
@@ -18,11 +18,10 @@ class BitrixCommand extends Command
      */
     public function isEnabled()
     {
-        if ($this->getApplication()->isBitrixLoaded())
-        {
+        if ($this->getApplication()->isBitrixLoaded()) {
             return true;
         }
-        
+
         return false;
     }
 }

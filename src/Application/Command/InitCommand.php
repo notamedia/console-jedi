@@ -16,7 +16,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Command application initialization.
- * 
+ *
  * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class InitCommand extends Command
@@ -55,7 +55,7 @@ class InitCommand extends Command
           Installation is completed.
           May the Force be with you.
      ';
-    
+
     /**
      * @var string Path to directory with templates of the application files.
      */
@@ -86,26 +86,26 @@ class InitCommand extends Command
     {
         $this->tmplDir = __DIR__ . '/../../../tmpl';
         $this->questionHelper = $this->getHelper('question');
-        
+
         parent::initialize($input, $output);
     }
-    
+
     /**
      * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output)
-    {        
+    {
         $output->writeln('<info>Install Console Jedi application</info>');
-        
+
         $this->createEnvironmentsDir($input, $output);
         $this->createConfiguration($input, $output);
-        
+
         $output->writeln('<info>' . static::COMPLETED_LOGO . '</info>');
     }
 
     /**
      * Creates directory with environments settings.
-     * 
+     *
      * @param InputInterface $input
      * @param OutputInterface $output
      */
@@ -113,48 +113,42 @@ class InitCommand extends Command
     {
         $targetDir = getcwd() . '/' . $this->envDir;
         $tmplDir = $this->tmplDir . '/environments';
-        
+
         $output->writeln('  - Environment settings');
-        
-        if (file_exists($targetDir))
-        {
+
+        if (file_exists($targetDir)) {
             $question = new ConfirmationQuestion(
-                '    <error>Directory ' . $targetDir . ' already exists</error>' . PHP_EOL 
+                '    <error>Directory ' . $targetDir . ' already exists</error>' . PHP_EOL
                 . '    <info>Overwrite? [Y/n]</info> ',
                 true,
                 '/^(y|j)/i'
             );
-            
-            if (!$this->questionHelper->ask($input, $output, $question))
-            {
+
+            if (!$this->questionHelper->ask($input, $output, $question)) {
                 return;
             }
         }
-                
+
         $fs = new Filesystem();
         $tmplIterator = new \RecursiveDirectoryIterator($tmplDir, \RecursiveDirectoryIterator::SKIP_DOTS);
         $iterator = new \RecursiveIteratorIterator($tmplIterator, \RecursiveIteratorIterator::SELF_FIRST);
 
-        foreach ($iterator as $item)
-        {
+        foreach ($iterator as $item) {
             $itemPath = $targetDir . '/' . $iterator->getSubPathName();
 
-            if ($item->isDir())
-            {
+            if ($item->isDir()) {
                 $fs->mkdir($itemPath);
-            }
-            else
-            {
+            } else {
                 $fs->copy($item, $itemPath, true);
             }
         }
-        
+
         $output->writeln('    Created directory settings of environments: <comment>' . $targetDir . '</comment>');
     }
 
     /**
      * Creates configuration file of application.
-     * 
+     *
      * @param InputInterface $input
      * @param OutputInterface $output
      */
@@ -164,8 +158,7 @@ class InitCommand extends Command
 
         $output->writeln('  - Configuration');
 
-        if (file_exists($path))
-        {
+        if (file_exists($path)) {
             $question = new ConfirmationQuestion(
                 '    <error>Configuration file ' . $path . ' already exists</error>' . PHP_EOL
                 . '    <info>Overwrite? [Y/n]</info> ',
@@ -173,43 +166,38 @@ class InitCommand extends Command
                 '/^(y|j)/i'
             );
 
-            if (!$this->questionHelper->ask($input, $output, $question))
-            {
+            if (!$this->questionHelper->ask($input, $output, $question)) {
                 return;
             }
         }
 
         $fs = new Filesystem();
-        
-        $question = new Question('    <info>Enter path to web directory relative to ' 
-            . $this->getApplication()->getRoot(). ':</info> ' . PHP_EOL 
+
+        $question = new Question('    <info>Enter path to web directory relative to '
+            . $this->getApplication()->getRoot() . ':</info> ' . PHP_EOL
             . '    (or do not specify if you are already in the web directory)' . PHP_EOL);
-        
+
         $question->setValidator(function ($answer) use ($fs) {
             $path = $answer;
-            
-            if ($answer === null)
-            {
+
+            if ($answer === null) {
                 $path = $this->getApplication()->getRoot();
-            }
-            elseif (!$fs->isAbsolutePath($answer))
-            {
+            } elseif (!$fs->isAbsolutePath($answer)) {
                 $path = $this->getApplication()->getRoot() . '/' . $answer;
             }
-            
-            if (!is_dir($path))
-            {
+
+            if (!is_dir($path)) {
                 throw new \RuntimeException('Directory "' . $path . '" is missing');
             }
-            
+
             return $answer;
         });
-        
+
         $webDir = $this->questionHelper->ask($input, $output, $question);
 
         $content = file_get_contents($this->tmplDir . '/.jedi.php');
         $content = str_replace(
-            ['%web-dir%', '%env-dir%'], 
+            ['%web-dir%', '%env-dir%'],
             [addslashes($webDir), addslashes($this->envDir)],
             $content
         );

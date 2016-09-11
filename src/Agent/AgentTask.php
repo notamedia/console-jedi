@@ -10,7 +10,7 @@ use Bitrix\Main\Type\DateTime;
 
 /**
  * Builder for create new agents in the Bitrix queue.
- * 
+ *
  * Usage:
  * ```php
  * use Notamedia\ConsoleJedi\Agent\AgentTask;
@@ -26,7 +26,7 @@ use Bitrix\Main\Type\DateTime;
  *      ->create();
  * ```
  * The result: will be the registered agent `\Vendor\Module\TestAgent::agent('arg1', true)->execute(100500);`.
- * 
+ *
  * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class AgentTask
@@ -54,7 +54,7 @@ class AgentTask
 
     /**
      * Sets agent class name.
-     * 
+     *
      * @param string $className
      *
      * @return $this
@@ -62,13 +62,13 @@ class AgentTask
     public function setClass($className)
     {
         $this->class = $className;
-        
+
         return $this;
     }
 
     /**
      * Sets the arguments for `__constructor` of agent class.
-     * 
+     *
      * @param array $args
      *
      * @return $this
@@ -82,7 +82,7 @@ class AgentTask
 
     /**
      * Sets the chain methods with arguments for add them to agent name for execution.
-     * 
+     *
      * @param array $callChain
      *
      * @return $this
@@ -96,7 +96,7 @@ class AgentTask
 
     /**
      * Sets the name of the module to which the agent belongs.
-     * 
+     *
      * @param string $moduleName
      *
      * @return $this
@@ -110,49 +110,49 @@ class AgentTask
 
     /**
      * Sets the time interval between execution.
-     * 
+     *
      * @param int $seconds
      *
      * @return $this
      */
     public function setInterval($seconds)
     {
-        $this->interval = (int) $seconds;
+        $this->interval = (int)$seconds;
 
         return $this;
     }
 
     /**
      * Sets the periodically mode of agent.
-     * 
+     *
      * @param bool $periodically
      *
      * @return $this
      */
     public function setPeriodically($periodically)
     {
-        $this->periodically = (bool) $periodically;
+        $this->periodically = (bool)$periodically;
 
         return $this;
     }
 
     /**
      * Sets the activity of agent.
-     * 
+     *
      * @param bool $active
      *
      * @return $this
      */
     public function setActive($active)
     {
-        $this->active = (bool) $active;
+        $this->active = (bool)$active;
 
         return $this;
     }
 
     /**
      * Sets first execution time.
-     * 
+     *
      * @param DateTime $time
      *
      * @return $this
@@ -166,28 +166,28 @@ class AgentTask
 
     /**
      * Sets sorting.
-     * 
+     *
      * @param int $sort
      *
      * @return $this
      */
     public function setSort($sort)
     {
-        $this->sort = (int) $sort;
+        $this->sort = (int)$sort;
 
         return $this;
     }
 
     /**
      * Sets user ID on whose behalf the agent is executed.
-     * 
+     *
      * @param int $userId User ID.
      *
      * @return $this
      */
     public function setUserId($userId)
     {
-        $this->userId = (int) $userId;
+        $this->userId = (int)$userId;
 
         return $this;
     }
@@ -197,24 +197,17 @@ class AgentTask
      */
     protected function convertation()
     {
-        if ($this->executionTime instanceof DateTime)
-        {
+        if ($this->executionTime instanceof DateTime) {
             $this->executionTime = $this->executionTime->toString();
-        }
-        elseif ($this->executionTime === null)
-        {
+        } elseif ($this->executionTime === null) {
             $time = new DateTime();
             $this->executionTime = $time->toString();
         }
-        
-        foreach (['periodically', 'active'] as $property)
-        {
-            if ($this->$property === true)
-            {
+
+        foreach (['periodically', 'active'] as $property) {
+            if ($this->$property === true) {
                 $this->$property = 'Y';
-            }
-            else
-            {
+            } else {
                 $this->$property = 'N';
             }
         }
@@ -222,7 +215,7 @@ class AgentTask
 
     /**
      * Create agent in Bitrix queue.
-     * 
+     *
      * @param bool $checkExist Return false and set `CAdminException`, if agent already exist.
      *
      * @return bool|int ID of agent or false if `$checkExist` is true and agent already exist.

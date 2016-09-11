@@ -23,7 +23,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Console Jedi application.
- * 
+ *
  * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class Application extends \Symfony\Component\Console\Application
@@ -74,50 +74,39 @@ class Application extends \Symfony\Component\Console\Application
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        if ($this->getConfiguration() === null)
-        {
+        if ($this->getConfiguration() === null) {
             $this->loadConfiguration();
         }
-        
-        if (!in_array($this->getCommandName($input), ['environment:init', 'env:init']))
-        {
+
+        if (!in_array($this->getCommandName($input), ['environment:init', 'env:init'])) {
             $this->initializeBitrix();
         }
-        
-        if ($this->getConfiguration())
-        {
-            foreach ($this->getBitrixCommands() as $bitrixCommand)
-            {
+
+        if ($this->getConfiguration()) {
+            foreach ($this->getBitrixCommands() as $bitrixCommand) {
                 $this->add($bitrixCommand);
             }
-            
-            foreach ($this->getConfiguration()['commands'] as $command)
-            {
+
+            foreach ($this->getConfiguration()['commands'] as $command) {
                 $this->add($command);
             }
         }
 
-        if ($this->isBitrixLoaded() && $this->getConfiguration()['useModules'] === true)
-        {
-            foreach ($this->getModulesCommands() as $moduleCommand)
-            {
+        if ($this->isBitrixLoaded() && $this->getConfiguration()['useModules'] === true) {
+            foreach ($this->getModulesCommands() as $moduleCommand) {
                 $this->add($moduleCommand);
             }
         }
 
         $exitCode = parent::doRun($input, $output);
 
-        if ($this->getConfiguration() === null)
-        {
-            $output->writeln(PHP_EOL . '<error>No configuration loaded.</error> ' 
+        if ($this->getConfiguration() === null) {
+            $output->writeln(PHP_EOL . '<error>No configuration loaded.</error> '
                 . 'Please run <info>init</info> command first');
-        }
-        else
-        {
-            switch ($this->getBitrixStatus())
-            {
+        } else {
+            switch ($this->getBitrixStatus()) {
                 case static::BITRIX_STATUS_UNAVAILABLE:
-                    $output->writeln(PHP_EOL . sprintf('<error>No Bitrix kernel found in %s.</error> ' 
+                    $output->writeln(PHP_EOL . sprintf('<error>No Bitrix kernel found in %s.</error> '
                             . 'Please run <info>env:init</info> command to configure', $this->getDocumentRoot()));
                     break;
 
@@ -126,8 +115,7 @@ class Application extends \Symfony\Component\Console\Application
                     break;
 
                 case static::BITRIX_STATUS_COMPLETE:
-                    if ($this->getCommandName($input) === null)
-                    {
+                    if ($this->getCommandName($input) === null) {
                         $output->writeln(PHP_EOL . sprintf('Using Bitrix <info>kernel v%s</info>.</info>', SM_VERSION),
                             OutputInterface::VERBOSITY_VERY_VERBOSE);
                     }
@@ -145,13 +133,13 @@ class Application extends \Symfony\Component\Console\Application
     {
         $commands = parent::getDefaultCommands();
         $commands[] = new \Notamedia\ConsoleJedi\Application\Command\InitCommand();
-        
+
         return $commands;
     }
 
     /**
      * Gets Bitrix console commands from this package.
-     * 
+     *
      * @return Command[]
      */
     protected function getBitrixCommands()
@@ -179,23 +167,18 @@ class Application extends \Symfony\Component\Console\Application
     {
         $commands = [];
 
-        foreach (ModuleManager::getInstalledModules() as $module)
-        {
+        foreach (ModuleManager::getInstalledModules() as $module) {
             $cliFile = getLocalPath('modules/' . $module['ID'] . '/cli.php');
 
-            if ($cliFile === false)
-            {
+            if ($cliFile === false) {
                 continue;
-            }
-            elseif (!Loader::includeModule($module['ID']))
-            {
+            } elseif (!Loader::includeModule($module['ID'])) {
                 continue;
             }
 
             $config = include_once $this->getDocumentRoot() . $cliFile;
 
-            if (isset($config['commands']) && is_array($config['commands']))
-            {
+            if (isset($config['commands']) && is_array($config['commands'])) {
                 $commands = array_merge($commands, $config['commands']);
             }
         }
@@ -205,49 +188,43 @@ class Application extends \Symfony\Component\Console\Application
 
     /**
      * Loading application configuration.
-     * 
+     *
      * @param string $path Path to configuration file.
      *
      * @return bool
-     * 
+     *
      * @throws ConfigurationException
      */
     public function loadConfiguration($path = self::CONFIG_DEFAULT_FILE)
     {
-        if (!is_file($path))
-        {
+        if (!is_file($path)) {
             return false;
         }
-        
+
         $this->configuration = include $path;
-        
-        if (!is_array($this->configuration))
-        {
+
+        if (!is_array($this->configuration)) {
             throw new ConfigurationException('Configuration file ' . $path . ' must return an array');
         }
-        
+
         $filesystem = new Filesystem();
-        
-        if ($filesystem->isAbsolutePath($this->configuration['web-dir']))
-        {
+
+        if ($filesystem->isAbsolutePath($this->configuration['web-dir'])) {
             $this->setDocumentRoot($this->configuration['web-dir']);
-        }
-        else
-        {
+        } else {
             $this->setDocumentRoot($this->getRoot() . '/' . $this->configuration['web-dir']);
         }
 
-        if (!is_dir($_SERVER['DOCUMENT_ROOT']))
-        {
+        if (!is_dir($_SERVER['DOCUMENT_ROOT'])) {
             return false;
         }
-        
+
         return true;
     }
 
     /**
      * Gets application configuration.
-     * 
+     *
      * @return null|array
      */
     public function getConfiguration()
@@ -257,70 +234,62 @@ class Application extends \Symfony\Component\Console\Application
 
     /**
      * Initialize kernel of Bitrix.
-     * 
+     *
      * @return int The status of readiness kernel.
      */
     public function initializeBitrix()
     {
-        if ($this->bitrixStatus === static::BITRIX_STATUS_COMPLETE)
-        {
+        if ($this->bitrixStatus === static::BITRIX_STATUS_COMPLETE) {
             return static::BITRIX_STATUS_COMPLETE;
-        }
-        elseif (!$this->checkBitrix())
-        {
+        } elseif (!$this->checkBitrix()) {
             return static::BITRIX_STATUS_UNAVAILABLE;
         }
-        
+
         define('NO_KEEP_STATISTIC', true);
         define('NOT_CHECK_PERMISSIONS', true);
 
-        try
-        {
+        try {
             /**
              * Declare global legacy variables
              *
              * Including kernel here makes them local by default but some modules depend on them in installation class
              */
             global
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $DB, $DBType, $DBHost, $DBLogin, $DBPassword, $DBName, $DBDebug, $DBDebugToFile, $APPLICATION, $USER, $DBSQLServerType;
+            /** @noinspection PhpUnusedLocalVariableInspection */
+            $DB, $DBType, $DBHost, $DBLogin, $DBPassword, $DBName, $DBDebug, $DBDebugToFile, $APPLICATION, $USER, $DBSQLServerType;
 
             require_once $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_before.php';
-            
-            if (defined('B_PROLOG_INCLUDED') && B_PROLOG_INCLUDED === true)
-            {
+
+            if (defined('B_PROLOG_INCLUDED') && B_PROLOG_INCLUDED === true) {
                 $this->bitrixStatus = static::BITRIX_STATUS_COMPLETE;
             }
-        }
-        catch (ConnectionException $e)
-        {
+        } catch (ConnectionException $e) {
             $this->bitrixStatus = static::BITRIX_STATUS_NO_DB_CONNECTION;
         }
-        
+
         return $this->bitrixStatus;
     }
 
     /**
      * Checks readiness of Bitrix for kernel initialize.
-     * 
+     *
      * @return bool
      */
     public function checkBitrix()
     {
         if (
-            !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/.settings.php') 
+            !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/.settings.php')
             && !is_file($_SERVER['DOCUMENT_ROOT'] . '/bitrix/.settings_extra.php')
-        )
-        {
+        ) {
             return false;
         }
-        
+
         return true;
     }
 
     /**
      * Gets Bitrix status.
-     * 
+     *
      * @return int Value of constant `Application::BITRIX_STATUS_*`.
      */
     public function getBitrixStatus()
@@ -330,7 +299,7 @@ class Application extends \Symfony\Component\Console\Application
 
     /**
      * Checks that the Bitrix kernel is loaded.
-     * 
+     *
      * @return bool
      */
     public function isBitrixLoaded()
@@ -339,58 +308,49 @@ class Application extends \Symfony\Component\Console\Application
     }
 
     /**
-     * Autoloader classes of the tests. 
-     * 
-     * Initializes Bitrix kernel, finds and connects files in directory `vendor.module/tests/` 
+     * Autoloader classes of the tests.
+     *
+     * Initializes Bitrix kernel, finds and connects files in directory `vendor.module/tests/`
      * by pattern `<class>test.php` and loading modules of tests.
-     * 
+     *
      * @throws ConfigurationException
      */
     public function autoloadTests()
     {
-        if ($this->getConfiguration() === null)
-        {
+        if ($this->getConfiguration() === null) {
             $this->loadConfiguration();
         }
-        
+
         $this->initializeBitrix();
-        
+
         spl_autoload_register(function ($className) {
             $file = ltrim($className, "\\");
             $file = strtr($file, Loader::ALPHA_UPPER, Loader::ALPHA_LOWER);
             $file = str_replace('\\', '/', $file);
 
-            if (substr($file, -5) === 'table')
-            {
+            if (substr($file, -5) === 'table') {
                 $file = substr($file, 0, -5);
             }
 
             $arFile = explode('/', $file);
 
-            if (preg_match("#[^\\\\/a-zA-Z0-9_]#", $file))
-            {
+            if (preg_match("#[^\\\\/a-zA-Z0-9_]#", $file)) {
                 return false;
-            }
-            elseif ($arFile[0] === 'bitrix')
-            {
+            } elseif ($arFile[0] === 'bitrix') {
                 return false;
-            }
-            elseif ($arFile[2] !== 'tests')
-            {
+            } elseif ($arFile[2] !== 'tests') {
                 return false;
             }
 
             $module = array_shift($arFile) . '.' . array_shift($arFile);
 
-            if (!Loader::includeModule($module))
-            {
+            if (!Loader::includeModule($module)) {
                 return false;
             }
 
             $path = getLocalPath('/modules/' . $module . '/' . implode('/', $arFile) . '.php');
 
-            if ($path !== false)
-            {
+            if ($path !== false) {
                 include_once $this->getDocumentRoot() . $path;
             }
         });
@@ -398,7 +358,7 @@ class Application extends \Symfony\Component\Console\Application
 
     /**
      * Gets root directory from which are running Console Jedi.
-     * 
+     *
      * @return string
      */
     public function getRoot()
@@ -408,7 +368,7 @@ class Application extends \Symfony\Component\Console\Application
 
     /**
      * Sets path to the document root of site.
-     * 
+     *
      * @param string $dir Path to document root.
      */
     public function setDocumentRoot($dir)
@@ -418,7 +378,7 @@ class Application extends \Symfony\Component\Console\Application
 
     /**
      * Gets document root of site.
-     * 
+     *
      * @return null|string
      */
     public function getDocumentRoot()

@@ -16,7 +16,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Command for search module reindex
+ * Command for search module reindex.
  *
  * @author Marat Shamshutdinov <m.shamshutdinov@gmail.com>
  */
@@ -42,16 +42,14 @@ class ReIndexCommand extends BitrixCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (!Loader::includeModule('search'))
-        {
+        if (!Loader::includeModule('search')) {
             throw new BitrixException('Search module is not installed');
         }
 
         $searchResult = array();
 
         $bar = new ProgressBar($output, 0);
-        do
-        {
+        do {
             $bar->display();
 
             $searchResult = \CSearch::ReIndexAll($input->getOption('full'), static::UPDATE_TIME, $searchResult);
@@ -59,8 +57,7 @@ class ReIndexCommand extends BitrixCommand
             $bar->advance();
             $bar->clear();
 
-            if (is_array($searchResult) && $searchResult['MODULE'] == 'main')
-            {
+            if (is_array($searchResult) && $searchResult['MODULE'] == 'main') {
                 list(, $path) = explode("|", $searchResult["ID"], 2);
                 $output->writeln("\r       " . $path, OutputInterface::VERBOSITY_VERBOSE);
             }
@@ -70,8 +67,7 @@ class ReIndexCommand extends BitrixCommand
         $bar->clear();
         $output->write("\r");
 
-        if (ModuleManager::isModuleInstalled('socialnetwork'))
-        {
+        if (ModuleManager::isModuleInstalled('socialnetwork')) {
             $output->writeln('<info>The Social Network module needs to be reindexed using the Social Network component in the public section of site.</info>');
         }
 

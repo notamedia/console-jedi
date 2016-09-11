@@ -12,401 +12,375 @@ use Notamedia\ConsoleJedi\Application\Exception\BitrixException;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * Module entity
+ * Module entity.
  *
  * @author Marat Shamshutdinov <m.shamshutdinov@gmail.com>
  */
 class Module
 {
-	/** @var string */
-	private $name;
+    /**
+     * @var string
+     */
+    private $name;
+    /**
+     * @var \CModule
+     */
+    private $object;
+    /**
+     * @var bool
+     */
+    private $beta = false;
 
-	/** @var \CModule */
-	private $object;
+    /**
+     * @param string $moduleName
+     */
+    public function __construct($moduleName)
+    {
+        $this->name = $this->normalizeName($moduleName);
+    }
 
-	/** @var bool */
-	private $beta = false;
+    /**
+     * @param string $moduleName
+     * @return string
+     */
+    protected function normalizeName($moduleName)
+    {
+        return preg_replace("/[^a-zA-Z0-9_.]+/i", "", trim($moduleName));
+    }
 
-	/**
-	 * @param string $moduleName
-	 */
-	public function __construct($moduleName)
-	{
-		$this->name = $this->normalizeName($moduleName);
-	}
+    /**
+     * @return \CModule
+     */
+    protected function &getObject()
+    {
+        if (!isset($this->object)) {
+            $this->object = \CModule::CreateModuleObject($this->name);
+        }
 
-	/**
-	 * @param string $moduleName
-	 * @return string
-	 */
-	protected function normalizeName($moduleName)
-	{
-		return preg_replace("/[^a-zA-Z0-9_.]+/i", "", trim($moduleName));
-	}
+        if (!is_object($this->object) || !($this->object instanceof \CModule)) {
+            unset($this->object);
+            throw new Exception\ModuleNotFoundException('Module not found or incorrect', $this->name);
+        }
 
-	/**
-	 * @return \CModule
-	 */
-	protected function &getObject()
-	{
-		if (!isset($this->object))
-		{
-			$this->object = \CModule::CreateModuleObject($this->name);
-		}
+        return $this->object;
+    }
 
-		if (!is_object($this->object) || !($this->object instanceof \CModule))
-		{
-			unset($this->object);
-			throw new Exception\ModuleNotFoundException('Module not found or incorrect', $this->name);
-		}
+    /**
+     * Checks for module and module object existence.
+     *
+     * @return bool
+     */
+    public function exist()
+    {
+        try {
+            $this->getObject();
+        } catch (Exception\ModuleNotFoundException $e) {
+            return false;
+        }
 
-		return $this->object;
-	}
+        return true;
+    }
 
-	/**
-	 * Checks for module and module object existence
-	 *
-	 * @return bool
-	 */
-	public function exist()
-	{
-		try
-		{
-			$this->getObject();
-		}
-		catch (Exception\ModuleNotFoundException $e)
-		{
-			return false;
-		}
+    /**
+     * Check if module exists and installed
+     *
+     * @return bool
+     */
+    public function isRegistered()
+    {
+        return ModuleManager::isModuleInstalled($this->name) && $this->exist();
+    }
 
-		return true;
-	}
+    /**
+     * @return bool true for marketplace modules, false for kernel modules
+     */
+    public function isThirdParty()
+    {
+        return strpos($this->name, '.') !== false;
+    }
 
-	/**
-	 * Check if module exists and installed
-	 *
-	 * @return bool
-	 */
-	public function isRegistered()
-	{
-		return ModuleManager::isModuleInstalled($this->name) && $this->exist();
-	}
+    /**
+     * Install module.
+     *
+     * @throws Exception\ModuleException
+     * @throws BitrixException
+     */
+    public function register()
+    {
+        if (!$this->isRegistered()) {
+            $moduleObject =& $this->getObject();
 
-	/**
-	 * @return bool true for marketplace modules, false for kernel modules
-	 */
-	public function isThirdParty()
-	{
-		return strpos($this->name, '.') !== false;
-	}
+            /**
+             * It's important to check if module class defines InstallDB method (it must register module)
+             * Thus absent InstallDB indicates that the module does not support automatic installation
+             */
+            if ((new \ReflectionClass($moduleObject))->getMethod('InstallDB')->class !== get_class($moduleObject)) {
+                throw new Exception\ModuleInstallException(
+                    'Missing InstallDB method. This module does not support automatic installation',
+                    $this->name
+                );
+            }
 
-	/**
-	 * Install module
-	 *
-	 * @throws Exception\ModuleException
-	 * @throws BitrixException
-	 */
-	public function register()
-	{
-		if (!$this->isRegistered())
-		{
-			$moduleObject =& $this->getObject();
+            if (!$moduleObject->InstallDB() && BitrixException::hasException()) {
+                throw new Exception\ModuleInstallException(
+                    get_class($moduleObject) . '::InstallDB() returned false',
+                    $this->name
+                );
+            }
 
-			/**
-			 * It's important to check if module class defines InstallDB method (it must register module)
-			 * Thus absent InstallDB indicates that the module does not support automatic installation
-			 */
-			if ((new \ReflectionClass($moduleObject))->getMethod('InstallDB')->class !== get_class($moduleObject))
-			{
-				throw new Exception\ModuleInstallException(
-					'Missing InstallDB method. This module does not support automatic installation',
-					$this->name
-				);
-			}
+            $moduleObject->InstallEvents();
 
-			if (!$moduleObject->InstallDB() && BitrixException::hasException())
-			{
-				throw new Exception\ModuleInstallException(
-					get_class($moduleObject) . '::InstallDB() returned false',
-					$this->name
-				);
-			}
+            /** @noinspection PhpVoidFunctionResultUsedInspection */
+            if (!$moduleObject->InstallFiles() && BitrixException::hasException()) {
+                throw new Exception\ModuleInstallException(
+                    get_class($moduleObject) . '::InstallFiles() returned false',
+                    $this->name
+                );
+            }
 
-			$moduleObject->InstallEvents();
+            if (!$this->isRegistered()) {
+                throw new Exception\ModuleInstallException(
+                    'Module was not registered. Probably it does not support automatic installation.',
+                    $this->name
+                );
+            }
+        }
 
-			/** @noinspection PhpVoidFunctionResultUsedInspection */
-			if (!$moduleObject->InstallFiles() && BitrixException::hasException())
-			{
-				throw new Exception\ModuleInstallException(
-					get_class($moduleObject) . '::InstallFiles() returned false',
-					$this->name
-				);
-			}
+        return $this;
+    }
 
-			if (!$this->isRegistered())
-			{
-				throw new Exception\ModuleInstallException(
-					'Module was not registered. Probably it does not support automatic installation.',
-					$this->name
-				);
-			}
-		}
+    /**
+     * Download module from Marketplace.
+     *
+     * @return $this
+     */
+    public function load()
+    {
+        if (!$this->isRegistered()) {
+            if (!$this->exist()) {
+                require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/modules/main/classes/general/update_client_partner.php');
 
-		return $this;
-	}
+                if (!\CUpdateClientPartner::LoadModuleNoDemand(
+                    $this->getName(),
+                    $strError,
+                    $this->isBeta() ? 'N' : 'Y',
+                    LANGUAGE_ID)
+                ) {
+                    throw new Exception\ModuleLoadException($strError, $this->getName());
+                }
+            }
+        }
 
-	/**
-	 * Download module from marketplace
-	 *
-	 * @return $this
-	 */
-	public function load()
-	{
-		if (!$this->isRegistered())
-		{
-			if (!$this->exist())
-			{
-				require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/modules/main/classes/general/update_client_partner.php');
+        return $this;
+    }
 
-				if (!\CUpdateClientPartner::LoadModuleNoDemand(
-					$this->getName(),
-					$strError,
-					$this->isBeta() ? 'N' : 'Y',
-					LANGUAGE_ID)
-				)
-				{
-					throw new Exception\ModuleLoadException($strError, $this->getName());
-				}
-			}
-		}
+    /**
+     * Uninstall module.
+     *
+     * @throws Exception\ModuleException
+     * @throws BitrixException
+     */
+    public function unRegister()
+    {
+        $moduleObject = $this->getObject();
 
-		return $this;
-	}
+        if ($this->isRegistered()) {
+            /**
+             * It's important to check if module class defines UnInstallDB method (it should unregister module)
+             * Thus absent UnInstallDB indicates that the module does not support automatic uninstallation
+             */
+            if ((new \ReflectionClass($moduleObject))->getMethod('UnInstallDB')->class !== get_class($moduleObject)) {
+                throw new Exception\ModuleUninstallException(
+                    'Missing UnInstallDB method. This module does not support automatic uninstallation',
+                    $this->name
+                );
+            }
 
-	/**
-	 * Uninstall module
-	 *
-	 * @throws Exception\ModuleException
-	 * @throws BitrixException
-	 */
-	public function unRegister()
-	{
-		$moduleObject = $this->getObject();
+            /** @noinspection PhpVoidFunctionResultUsedInspection */
+            if (!$moduleObject->UnInstallFiles() && BitrixException::hasException()) {
+                throw new Exception\ModuleUninstallException(
+                    get_class($moduleObject) . '::UnInstallFiles() returned false',
+                    $this->name
+                );
+            }
 
-		if ($this->isRegistered())
-		{
-			/**
-			 * It's important to check if module class defines UnInstallDB method (it should unregister module)
-			 * Thus absent UnInstallDB indicates that the module does not support automatic uninstallation
-			 */
-			if ((new \ReflectionClass($moduleObject))->getMethod('UnInstallDB')->class !== get_class($moduleObject))
-			{
-				throw new Exception\ModuleUninstallException(
-					'Missing UnInstallDB method. This module does not support automatic uninstallation',
-					$this->name
-				);
-			}
+            $moduleObject->UnInstallEvents();
 
-			/** @noinspection PhpVoidFunctionResultUsedInspection */
-			if (!$moduleObject->UnInstallFiles() && BitrixException::hasException())
-			{
-				throw new Exception\ModuleUninstallException(
-					get_class($moduleObject) . '::UnInstallFiles() returned false',
-					$this->name
-				);
-			}
+            /** @noinspection PhpVoidFunctionResultUsedInspection */
+            if (!$moduleObject->UnInstallDB() && BitrixException::hasException()) {
+                throw new Exception\ModuleUninstallException(
+                    get_class($moduleObject) . '::UnInstallFiles() returned false',
+                    $this->name
+                );
+            }
 
-			$moduleObject->UnInstallEvents();
+            if ($this->isRegistered()) {
+                throw new Exception\ModuleUninstallException('Module was not unregistered', $this->name);
+            }
+        }
 
-			/** @noinspection PhpVoidFunctionResultUsedInspection */
-			if (!$moduleObject->UnInstallDB() && BitrixException::hasException())
-			{
-				throw new Exception\ModuleUninstallException(
-					get_class($moduleObject) . '::UnInstallFiles() returned false',
-					$this->name
-				);
-			}
+        return $this;
+    }
 
-			if ($this->isRegistered())
-			{
-				throw new Exception\ModuleUninstallException('Module was not unregistered', $this->name);
-			}
-		}
+    /**
+     * Uninstall and remove module directory.
+     */
+    public function remove()
+    {
+        if ($this->isRegistered()) {
+            $this->unRegister();
+        }
 
-		return $this;
-	}
+        $path = getLocalPath('modules/' . $this->getName());
 
-	/**
-	 * Uninstall and remove module directory
-	 */
-	public function remove()
-	{
-		if ($this->isRegistered())
-		{
-			$this->unRegister();
-		}
+        if ($path) {
+            (new Filesystem())->remove($_SERVER['DOCUMENT_ROOT'] . $path);
+        }
 
-		$path = getLocalPath('modules/' . $this->getName());
+        unset($this->object);
 
-		if ($path)
-		{
-			(new Filesystem())->remove($_SERVER['DOCUMENT_ROOT'] . $path);
-		}
+        return $this;
+    }
 
-		unset($this->object);
+    /**
+     * Update module.
+     *
+     * It must be called repeatedly until the method returns false.
+     * After each call php must be restarted (new process created) to update module class and function definitions.
+     *
+     * @param array $modulesUpdated [optional]
+     * @return bool
+     */
+    public function update(&$modulesUpdated = null)
+    {
+        require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/modules/main/classes/general/update_client_partner.php');
 
-		return $this;
-	}
+        if (!$this->isThirdParty()) {
+            throw new Exception\ModuleUpdateException('Kernel module updates are currently not supported.',
+                $this->getName());
+        }
 
-	/**
-	 * Update module
-	 *
-	 * It must be called repeatedly until the method returns false.
-	 * After each call php must be restarted (new process created) to update module class and function definitions.
-	 *
-	 * @param array $modulesUpdated [optional]
-	 * @return bool
-	 */
-	public function update(&$modulesUpdated = null)
-	{
-		require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/modules/main/classes/general/update_client_partner.php');
+        // ensures module existence
+        $this->getObject();
 
-		if (!$this->isThirdParty())
-		{
-			throw new Exception\ModuleUpdateException('Kernel module updates are currently not supported.', $this->getName());
-		}
+        $errorMessage = $updateDescription = null;
+        $loadResult = \CUpdateClientPartner::LoadModulesUpdates(
+            $errorMessage,
+            $updateDescription,
+            LANGUAGE_ID,
+            $this->isBeta() ? 'N' : 'Y',
+            [$this->getName()],
+            true
+        );
+        switch ($loadResult) {
+            // archive loaded
+            case "S":
+                return $this->update($modulesUpdated);
 
-		// ensures module existence
-		$this->getObject();
+            // error
+            case "E":
+                throw new Exception\ModuleUpdateException($errorMessage, $this->getName());
 
-		$errorMessage = $updateDescription = null;
-		$loadResult = \CUpdateClientPartner::LoadModulesUpdates(
-			$errorMessage,
-			$updateDescription,
-			LANGUAGE_ID,
-			$this->isBeta() ? 'N' : 'Y',
-			[$this->getName()],
-			true
-		);
-		switch ($loadResult)
-		{
-			// archive loaded
-			case "S":
-				return $this->update($modulesUpdated);
+            // finished installing updates
+            case "F":
+                return false;
 
-			// error
-			case "E":
-				throw new Exception\ModuleUpdateException($errorMessage, $this->getName());
+            // need to process loaded update
+            case 'U':
+                break;
+        }
 
-			// finished installing updates
-			case "F":
-				return false;
+        /** @var string Temp directory with update files */
+        $updateDir = null;
 
-			// need to process loaded update
-			case 'U':
-				break;
-		}
+        if (!\CUpdateClientPartner::UnGzipArchive($updateDir, $errorMessage, true)) {
+            throw new Exception\ModuleUpdateException('[CL02] UnGzipArchive failed. ' . $errorMessage,
+                $this->getName());
+        }
 
-		/** @var string Temp directory with update files */
-		$updateDir = null;
+        $this->validateUpdate($updateDir);
 
-		if (!\CUpdateClientPartner::UnGzipArchive($updateDir, $errorMessage, true))
-		{
-			throw new Exception\ModuleUpdateException('[CL02] UnGzipArchive failed. ' . $errorMessage, $this->getName());
-		}
+        if (isset($updateDescription["DATA"]["#"]["NOUPDATES"])) {
+            \CUpdateClientPartner::ClearUpdateFolder($_SERVER["DOCUMENT_ROOT"] . "/bitrix/updates/" . $updateDir);
+            return false;
+        }
 
-		$this->validateUpdate($updateDir);
+        $modulesUpdated = $updateDescr = [];
+        if (isset($updateDescription["DATA"]["#"]["ITEM"])) {
+            foreach ($updateDescription["DATA"]["#"]["ITEM"] as $moduleInfo) {
+                $modulesUpdated[$moduleInfo["@"]["NAME"]] = $moduleInfo["@"]["VALUE"];
+                $updateDescr[$moduleInfo["@"]["NAME"]] = $moduleInfo["@"]["DESCR"];
+            }
+        }
 
-		if (isset($updateDescription["DATA"]["#"]["NOUPDATES"]))
-		{
-			\CUpdateClientPartner::ClearUpdateFolder($_SERVER["DOCUMENT_ROOT"] . "/bitrix/updates/" . $updateDir);
-			return false;
-		}
+        if (\CUpdateClientPartner::UpdateStepModules($updateDir, $errorMessage)) {
+            foreach ($modulesUpdated as $key => $value) {
+                if (Option::set('main', 'event_log_marketplace', "Y") === "Y") {
+                    \CEventLog::Log("INFO", "MP_MODULE_DOWNLOADED", "main", $key, $value);
+                }
+            }
+        } else {
+            throw new Exception\ModuleUpdateException('[CL04] UpdateStepModules failed. ' . $errorMessage,
+                $this->getName());
+        }
 
-		$modulesUpdated = $updateDescr = [];
-		if (isset($updateDescription["DATA"]["#"]["ITEM"]))
-		{
-			foreach ($updateDescription["DATA"]["#"]["ITEM"] as $moduleInfo)
-			{
-				$modulesUpdated[$moduleInfo["@"]["NAME"]] = $moduleInfo["@"]["VALUE"];
-				$updateDescr[$moduleInfo["@"]["NAME"]] = $moduleInfo["@"]["DESCR"];
-			}
-		}
+        return true;
+    }
 
-		if (\CUpdateClientPartner::UpdateStepModules($updateDir, $errorMessage))
-		{
-			foreach ($modulesUpdated as $key => $value)
-			{
-				if (Option::set('main', 'event_log_marketplace', "Y") === "Y")
-				{
-					\CEventLog::Log("INFO", "MP_MODULE_DOWNLOADED", "main", $key, $value);
-				}
-			}
-		}
-		else
-		{
-			throw new Exception\ModuleUpdateException('[CL04] UpdateStepModules failed. ' . $errorMessage, $this->getName());
-		}
+    /**
+     * Check update files.
+     *
+     * @param string $updateDir
+     */
+    protected function validateUpdate($updateDir)
+    {
+        $errorMessage = null;
+        if (!\CUpdateClientPartner::CheckUpdatability($updateDir, $errorMessage)) {
+            throw new Exception\ModuleUpdateException('[CL03] CheckUpdatability failed. ' . $errorMessage,
+                $this->getName());
+        }
 
-		return true;
-	}
+        if (isset($updateDescription["DATA"]["#"]["ERROR"])) {
+            $errorMessage = "";
+            foreach ($updateDescription["DATA"]["#"]["ERROR"] as $errorDescription) {
+                $errorMessage .= "[" . $errorDescription["@"]["TYPE"] . "] " . $errorDescription["#"];
+            }
+            throw new Exception\ModuleUpdateException($errorMessage, $this->getName());
+        }
+    }
 
-	/**
-	 * Check update files
-	 * 
-	 * @param string $updateDir
-	 */
-	protected function validateUpdate($updateDir)
-	{
-		$errorMessage = null;
-		if (!\CUpdateClientPartner::CheckUpdatability($updateDir, $errorMessage))
-		{
-			throw new Exception\ModuleUpdateException('[CL03] CheckUpdatability failed. ' . $errorMessage, $this->getName());
-		}
+    /**
+     * Returns module name.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
 
-		if (isset($updateDescription["DATA"]["#"]["ERROR"]))
-		{
-			$errorMessage = "";
-			foreach ($updateDescription["DATA"]["#"]["ERROR"] as $errorDescription)
-			{
-				$errorMessage .= "[" . $errorDescription["@"]["TYPE"] . "] " . $errorDescription["#"];
-			}
-			throw new Exception\ModuleUpdateException($errorMessage, $this->getName());
-		}
-	}
+    /**
+     * Beta releases allowed?
+     *
+     * @return boolean
+     */
+    public function isBeta()
+    {
+        return $this->beta;
+    }
 
-	/**
-	 * Returns module name
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return $this->name;
-	}
+    /**
+     * Set beta releases installation.
+     *
+     * @param boolean $beta
+     */
+    public function setBeta($beta = true)
+    {
+        $this->beta = $beta;
+    }
 
-	/**
-	 * Beta releases allowed?
-	 *
-	 * @return boolean
-	 */
-	public function isBeta()
-	{
-		return $this->beta;
-	}
-
-	/**
-	 * Set beta releases installation
-	 *
-	 * @param boolean $beta
-	 */
-	public function setBeta($beta = true)
-	{
-		$this->beta = $beta;
-	}
-
-	public function getVersion()
-	{
-		return $this->getObject()->MODULE_VERSION;
-	}
+    public function getVersion()
+    {
+        return $this->getObject()->MODULE_VERSION;
+    }
 }

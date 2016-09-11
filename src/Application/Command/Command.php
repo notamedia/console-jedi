@@ -8,7 +8,7 @@ namespace Notamedia\ConsoleJedi\Application\Command;
 
 /**
  * Base class for console command.
- * 
+ *
  * @author Nik Samokhvalov <nik@samokhvalov.info>
  */
 class Command extends \Symfony\Component\Console\Command\Command

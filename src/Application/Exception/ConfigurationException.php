@@ -13,5 +13,5 @@ namespace Notamedia\ConsoleJedi\Application\Exception;
  */
 class ConfigurationException extends \ErrorException
 {
-    
+
 }
