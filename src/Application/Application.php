@@ -16,6 +16,7 @@ use Notamedia\ConsoleJedi\Cache\Command\ClearCommand;
 use Notamedia\ConsoleJedi\Environment\Command\InitCommand;
 use Notamedia\ConsoleJedi\Module\Command as Module;
 use Notamedia\ConsoleJedi\Search\Command\ReIndexCommand;
+use Notamedia\ConsoleJedi\Schema\Schema;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -152,7 +153,8 @@ class Application extends \Symfony\Component\Console\Application
                 new InitCommand(),
                 new ReIndexCommand(),
             ],
-            Module\ModuleCommand::getCommands()
+            Module\ModuleCommand::getCommands(),
+            Schema::getCommands()
         );
     }
 
