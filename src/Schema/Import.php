@@ -3,6 +3,7 @@
 namespace Notamedia\ConsoleJedi\Schema;
 
 use Bitrix\Main\Loader;
+use Bitrix\Main\IO\Path;
 use Notamedia\ConsoleJedi\Schema\Exception\ImportException;
 
 /**
@@ -40,7 +41,7 @@ class Import implements ActionInterface
             'action_section' => 'A',
             'action_element' => 'A',
             'preview' => '',
-            'interval' => 30
+            'interval' => 0
         ];
 
         Loader::includeModule('iblock');

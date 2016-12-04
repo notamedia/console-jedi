@@ -3,6 +3,7 @@
 namespace Notamedia\ConsoleJedi\Schema;
 
 use Bitrix\Main\Loader;
+use Bitrix\Main\IO\Path;
 use Notamedia\ConsoleJedi\Schema\Exception\ExportException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -39,7 +40,7 @@ class Export implements ActionInterface
             'path' => '',
             'sections' => 'none',
             'elements' => 'none',
-            'interval' => 30
+            'interval' => 0
         ];
 
         Loader::includeModule('iblock');
