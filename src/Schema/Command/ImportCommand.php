@@ -23,7 +23,7 @@ class ImportCommand extends BitrixCommand
     {
         $this
             ->setName('schema:import')
-            ->setDescription('Import information iblock(s) from xml')
+            ->setDescription('Import information block(s) from xml')
             ->addArgument(
                 'type',
                 InputArgument::REQUIRED,

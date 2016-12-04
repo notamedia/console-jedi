@@ -23,7 +23,7 @@ class ExportCommand extends BitrixCommand
     {
         $this
             ->setName('schema:export')
-            ->setDescription('Export information iblock(s) to xml')
+            ->setDescription('Export information block(s) to xml')
             ->addArgument(
                 'type',
                 InputArgument::REQUIRED,
