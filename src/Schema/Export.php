@@ -92,11 +92,13 @@ class Export implements ActionInterface
      */
     public function execute()
     {
+        $absFilename = Path::convertSiteRelativeToAbsolute($this->config['path']);
+
         $this->session = [
             "property_map" => false,
             "section_map" => false,
-            "work_dir" => false,
-            "file_dir" => false,
+            "work_dir" => pathinfo($absFilename, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR,
+            "file_dir" => pathinfo($this->config['path'], PATHINFO_FILENAME) . "_files" . DIRECTORY_SEPARATOR,
         ];
 
         $this->export();
