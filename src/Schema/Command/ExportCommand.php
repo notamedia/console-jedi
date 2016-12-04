@@ -92,7 +92,7 @@ class ExportCommand extends BitrixCommand
 
             try {
                 $xml_id = \CIBlockCMLExport::GetIBlockXML_ID($iblock['ID']);
-                $path = implode('/', [$this->dir, $xml_id]) . $this->extension;
+                $path = implode(DIRECTORY_SEPARATOR, [$this->dir, $xml_id]) . $this->extension;
 
                 $export
                     ->setPath($path)

@@ -55,7 +55,7 @@ trait CommandTrait
             $dir = getcwd();
         }
 
-        $dir = rtrim($dir, '/');
+        $dir = rtrim($dir, DIRECTORY_SEPARATOR);
 
         if (!Directory::isDirectoryExists($dir) || !Directory::isDirectory($dir)) {
             $this->errors[] = 'Directory not found';

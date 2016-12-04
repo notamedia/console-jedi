@@ -93,7 +93,7 @@ class ImportCommand extends BitrixCommand
             ->setActionSection($input->getOption('sections'))
             ->setActionElement($input->getOption('elements'));;
 
-        foreach (glob(implode('/*', [$this->dir, $this->extension])) as $file) {
+        foreach (glob(implode(DIRECTORY_SEPARATOR . '*', [$this->dir, $this->extension])) as $file) {
 
             try {
                 $import
