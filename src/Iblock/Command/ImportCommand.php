@@ -1,10 +1,10 @@
 <?php
 
-namespace Notamedia\ConsoleJedi\Schema\Command;
+namespace Notamedia\ConsoleJedi\Iblock\Command;
 
 use Notamedia\ConsoleJedi\Application\Command\BitrixCommand;
-use Notamedia\ConsoleJedi\Schema\Exception\SchemaException;
-use Notamedia\ConsoleJedi\Schema\Schema;
+use Notamedia\ConsoleJedi\Iblock\Exception\SchemaException;
+use Notamedia\ConsoleJedi\Iblock\Schema;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Bitrix\Main\Loader;
 
-class ExportCommand extends BitrixCommand
+class ImportCommand extends BitrixCommand
 {
     use CommandTrait;
 
@@ -22,37 +22,38 @@ class ExportCommand extends BitrixCommand
     protected function configure()
     {
         $this
-            ->setName('schema:export')
-            ->setDescription('Export information block(s) to xml')
+            ->setName('iblock:import')
+            ->setDescription('Import information block(s) from xml')
             ->addArgument(
                 'type',
                 InputArgument::REQUIRED,
                 'Information iblock type'
             )
             ->addArgument(
-                'code',
+                'sites',
                 InputArgument::REQUIRED,
-                'Information iblock code'
+                'Sites to which the information iblock will be bound (if it is to be created)'
             )
             ->addArgument(
                 'dir',
                 InputArgument::OPTIONAL,
-                'Directory to export'
+                'Directory to import'
             )
             ->addOption(
                 'sections',
                 's',
                 InputOption::VALUE_OPTIONAL,
-                'Export sections [ "active", "all", "none" ]',
-                'none'
+                'If an existing section is no longer in the source file [ leave: "N", deactivate: "A", delete: "D" ]',
+                'A'
             )
             ->addOption(
                 'elements',
                 'e',
                 InputOption::VALUE_OPTIONAL,
-                'Export elements [ "active", "all", "none" ]',
-                'none'
+                'If an existing element is no longer in the source file [ leave: "N", deactivate: "A", delete: "D" ]',
+                'A'
             );
+
     }
 
     /**
@@ -63,13 +64,15 @@ class ExportCommand extends BitrixCommand
         Loader::includeModule('iblock');
     }
 
+
     /**
      * {@inheritdoc}
      */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         $this->setDir($input);
-        $this->setIblocks($input);
+        $this->setType($input);
+        $this->setSites($input);
     }
 
     /**
@@ -84,31 +87,27 @@ class ExportCommand extends BitrixCommand
             return false;
         }
 
-        $export = Schema::export()
-            ->setSections($input->getOption('sections'))
-            ->setElements($input->getOption('elements'));
+        $import = Schema::import()
+            ->setType($this->type)
+            ->setSites($this->sites)
+            ->setActionSection($input->getOption('sections'))
+            ->setActionElement($input->getOption('elements'));;
 
-        foreach ($this->iblocks as $iblock) {
+        foreach (glob(implode(DIRECTORY_SEPARATOR . '*', [$this->dir, $this->extension])) as $file) {
 
             try {
-                $xml_id = \CIBlockCMLExport::GetIBlockXML_ID($iblock['ID']);
-                $path = implode(DIRECTORY_SEPARATOR, [$this->dir, $xml_id]) . $this->extension;
-
-                $export
-                    ->setPath($path)
-                    ->setId($iblock['ID'])
+                $import
+                    ->setPath($file)
                     ->execute();
 
-                $output->writeln(sprintf('<info>%s</info> iblock %s %s', 'success', $iblock['CODE'], $path));
+                $output->writeln(sprintf('<info>%s</info> file %s', 'success', $file));
 
             } catch (SchemaException $e) {
-                $output->writeln(sprintf('<error>%s</error> iblock %s', 'fail', $iblock['CODE']));
+                $output->writeln(sprintf('<error>%s</error> file %s', 'fail', $file));
                 if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
                     $output->writeln($e->getMessage());
                 }
             }
         }
-
-        return true;
     }
 }

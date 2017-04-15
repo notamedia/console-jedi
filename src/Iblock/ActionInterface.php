@@ -1,10 +1,10 @@
 <?php
 
-namespace Notamedia\ConsoleJedi\Schema;
+namespace Notamedia\ConsoleJedi\Iblock;
 
 /**
  * Interface ActionInterface
- * @package Notamedia\ConsoleJedi\Schema
+ * @package Notamedia\ConsoleJedi\Iblock
  */
 interface ActionInterface
 {

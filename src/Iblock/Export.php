@@ -1,15 +1,15 @@
 <?php
 
-namespace Notamedia\ConsoleJedi\Schema;
+namespace Notamedia\ConsoleJedi\Iblock;
 
 use Bitrix\Main\Loader;
 use Bitrix\Main\IO\Path;
-use Notamedia\ConsoleJedi\Schema\Exception\ExportException;
+use Notamedia\ConsoleJedi\Iblock\Exception\ExportException;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Class Export
- * @package Notamedia\ConsoleJedi\Schema
+ * @package Notamedia\ConsoleJedi\Iblock
  */
 class Export implements ActionInterface
 {

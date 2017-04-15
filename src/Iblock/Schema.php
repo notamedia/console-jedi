@@ -1,13 +1,13 @@
 <?php
 
-namespace Notamedia\ConsoleJedi\Schema;
+namespace Notamedia\ConsoleJedi\Iblock;
 
-use Notamedia\ConsoleJedi\Schema\Command\ExportCommand;
-use Notamedia\ConsoleJedi\Schema\Command\ImportCommand;
+use Notamedia\ConsoleJedi\Iblock\Command\ExportCommand;
+use Notamedia\ConsoleJedi\Iblock\Command\ImportCommand;
 
 /**
- * Class Schema
- * @package Notamedia\ConsoleJedi\Schema
+ * Class Iblock
+ * @package Notamedia\ConsoleJedi\Iblock
  */
 class Schema
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Notamedia\ConsoleJedi\Schema\Command;
+namespace Notamedia\ConsoleJedi\Iblock\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Bitrix\Main\IO\Directory;
@@ -10,7 +10,7 @@ use Bitrix\Iblock\IblockTable;
 
 /**
  * Class CommandTrait
- * @package Notamedia\ConsoleJedi\Schema\Command
+ * @package Notamedia\ConsoleJedi\Iblock\Command
  */
 trait CommandTrait
 {

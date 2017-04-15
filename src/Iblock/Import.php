@@ -1,14 +1,14 @@
 <?php
 
-namespace Notamedia\ConsoleJedi\Schema;
+namespace Notamedia\ConsoleJedi\Iblock;
 
 use Bitrix\Main\Loader;
 use Bitrix\Main\IO\Path;
-use Notamedia\ConsoleJedi\Schema\Exception\ImportException;
+use Notamedia\ConsoleJedi\Iblock\Exception\ImportException;
 
 /**
  * Class Import
- * @package Notamedia\ConsoleJedi\Schema
+ * @package Notamedia\ConsoleJedi\Iblock
  */
 class Import implements ActionInterface
 {
