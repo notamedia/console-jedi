@@ -4,7 +4,7 @@ namespace Notamedia\ConsoleJedi\Iblock\Command;
 
 use Notamedia\ConsoleJedi\Application\Command\BitrixCommand;
 use Notamedia\ConsoleJedi\Iblock\Exception\SchemaException;
-use Notamedia\ConsoleJedi\Iblock\Schema;
+use Notamedia\ConsoleJedi\Iblock\Importer;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -90,7 +90,8 @@ class ImportCommand extends BitrixCommand
             return false;
         }
 
-        $import = Schema::import()
+        $importer = new Importer();
+        $importer
             ->setType($this->type)
             ->setSites($this->sites)
             ->setActionSection($input->getOption('sections'))
@@ -99,7 +100,7 @@ class ImportCommand extends BitrixCommand
         foreach (glob(implode(DIRECTORY_SEPARATOR . '*', [$this->dir, $this->extension])) as $file) {
 
             try {
-                $import
+                $importer
                     ->setPath($file)
                     ->execute();
 

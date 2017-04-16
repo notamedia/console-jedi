@@ -4,7 +4,7 @@ namespace Notamedia\ConsoleJedi\Iblock\Command;
 
 use Notamedia\ConsoleJedi\Application\Command\BitrixCommand;
 use Notamedia\ConsoleJedi\Iblock\Exception\SchemaException;
-use Notamedia\ConsoleJedi\Iblock\Schema;
+use Notamedia\ConsoleJedi\Iblock\Exporter;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -87,7 +87,8 @@ class ExportCommand extends BitrixCommand
             return false;
         }
 
-        $export = Schema::export()
+        $exporter = new Exporter();
+        $exporter
             ->setSections($input->getOption('sections'))
             ->setElements($input->getOption('elements'));
 
@@ -97,7 +98,7 @@ class ExportCommand extends BitrixCommand
                 $xml_id = \CIBlockCMLExport::GetIBlockXML_ID($iblock['ID']);
                 $path = implode(DIRECTORY_SEPARATOR, [$this->dir, $xml_id]) . $this->extension;
 
-                $export
+                $exporter
                     ->setPath($path)
                     ->setId($iblock['ID'])
                     ->execute();
