@@ -3,7 +3,7 @@
 namespace Notamedia\ConsoleJedi\Iblock\Command;
 
 use Notamedia\ConsoleJedi\Application\Command\BitrixCommand;
-use Notamedia\ConsoleJedi\Iblock\Exception\SchemaException;
+use Notamedia\ConsoleJedi\Iblock\Exception\IblockException;
 use Notamedia\ConsoleJedi\Iblock\Importer;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -106,7 +106,7 @@ class ImportCommand extends BitrixCommand
 
                 $output->writeln(sprintf('<info>%s</info> file %s', 'success', $file));
 
-            } catch (SchemaException $e) {
+            } catch (IblockException $e) {
                 $output->writeln(sprintf('<error>%s</error> file %s', 'fail', $file));
                 if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
                     $output->writeln($e->getMessage());
