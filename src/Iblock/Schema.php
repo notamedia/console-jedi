@@ -23,18 +23,18 @@ class Schema
     }
 
     /**
-     * @return Export
+     * @return Exporter
      */
     static public function export()
     {
-        return new Export();
+        return new Exporter();
     }
 
     /**
-     * @return Import
+     * @return Importer
      */
     static public function import()
     {
-        return new Import();
+        return new Importer();
     }
 }
