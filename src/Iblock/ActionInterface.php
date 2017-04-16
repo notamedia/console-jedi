@@ -10,8 +10,6 @@ interface ActionInterface
 {
     /**
      * Action
-     *
-     * @return $this
      */
     public function execute();
 }

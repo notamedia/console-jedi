@@ -123,8 +123,6 @@ class Importer implements ActionInterface
 
         $this->read();
         $this->import();
-
-        return $this;
     }
 
     /**

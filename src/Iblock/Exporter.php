@@ -111,7 +111,6 @@ class Exporter implements ActionInterface
         ];
 
         $this->export();
-        return $this;
     }
 
     /**
