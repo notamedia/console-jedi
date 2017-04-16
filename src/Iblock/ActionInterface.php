@@ -9,6 +9,8 @@ namespace Notamedia\ConsoleJedi\Iblock;
 interface ActionInterface
 {
     /**
+     * Action
+     *
      * @return $this
      */
     public function execute();

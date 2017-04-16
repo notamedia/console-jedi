@@ -15,42 +15,49 @@ trait MigrationCommandTrait
 {
     /**
      * Errors check parameters
+     *
      * @var array
      */
     protected $errors = [];
 
     /**
      * Information block sites
+     *
      * @var array
      */
     protected $sites = [];
 
     /**
      * Information block type
+     *
      * @var string
      */
     protected $type = '';
 
     /**
      * Information blocks
+     *
      * @var array
      */
     protected $iblocks = [];
 
     /**
      * Directory with file(s)
+     *
      * @var string
      */
     protected $dir;
 
     /**
      * Extension file(s)
+     *
      * @var string
      */
     protected $extension = '.xml';
 
     /**
      * Check argument directory and set $this->dir
+     *
      * @param InputInterface $input
      */
     protected function setDir(InputInterface $input)
@@ -72,6 +79,7 @@ trait MigrationCommandTrait
 
     /**
      * Check arguments type and code, set $this->iblocks
+     *
      * @param InputInterface $input
      */
     protected function setIblocks(InputInterface $input)
@@ -93,6 +101,7 @@ trait MigrationCommandTrait
 
     /**
      * Check argument type and set $this->type
+     *
      * @param InputInterface $input
      */
     protected function setType(InputInterface $input)
@@ -113,6 +122,7 @@ trait MigrationCommandTrait
 
     /**
      * Check argument sites and set $this->sites
+     *
      * @param InputInterface $input
      */
     protected function setSites(InputInterface $input)

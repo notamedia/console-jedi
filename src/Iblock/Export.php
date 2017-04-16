@@ -8,8 +8,7 @@ use Notamedia\ConsoleJedi\Iblock\Exception\ExportException;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * Class Export
- * @package Notamedia\ConsoleJedi\Iblock
+ * Export information block in xml file
  */
 class Export implements ActionInterface
 {
@@ -29,6 +28,8 @@ class Export implements ActionInterface
     protected $export;
 
     /**
+     * Prefix temp file
+     *
      * @var string
      */
     protected $prefix = '.tmp';
@@ -48,6 +49,8 @@ class Export implements ActionInterface
     }
 
     /**
+     * Set id information block
+     *
      * @param int $id
      * @return $this
      */
@@ -58,6 +61,8 @@ class Export implements ActionInterface
     }
 
     /**
+     * Set file path to export
+     *
      * @param string $path
      * @return $this
      */
@@ -68,6 +73,8 @@ class Export implements ActionInterface
     }
 
     /**
+     * Set settings export sections
+     *
      * @param string $sections
      * @return $this
      */
@@ -78,6 +85,8 @@ class Export implements ActionInterface
     }
 
     /**
+     * Set settings export elements
+     *
      * @param string $elements
      * @return $this
      */
@@ -88,7 +97,7 @@ class Export implements ActionInterface
     }
 
     /**
-     * @return $this
+     * @inheritdoc
      */
     public function execute()
     {
@@ -106,6 +115,8 @@ class Export implements ActionInterface
     }
 
     /**
+     * Direct export
+     *
      * @return $this
      * @throws ExportException
      */

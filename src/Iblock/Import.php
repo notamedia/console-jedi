@@ -7,8 +7,7 @@ use Bitrix\Main\IO\Path;
 use Notamedia\ConsoleJedi\Iblock\Exception\ImportException;
 
 /**
- * Class Import
- * @package Notamedia\ConsoleJedi\Iblock
+ * Import information block from xml file
  */
 class Import implements ActionInterface
 {
@@ -51,6 +50,8 @@ class Import implements ActionInterface
     }
 
     /**
+     * Set type information block
+     *
      * @param string $type
      * @return $this
      */
@@ -61,6 +62,8 @@ class Import implements ActionInterface
     }
 
     /**
+     * Set file path to import
+     *
      * @param string $path
      * @return $this
      */
@@ -71,6 +74,7 @@ class Import implements ActionInterface
     }
 
     /**
+     * Set binding sites for importing information block
      * @param array $lids
      * @return $this
      */
@@ -81,6 +85,8 @@ class Import implements ActionInterface
     }
 
     /**
+     * What doing with existing section
+     *
      * @param string $action
      * @return $this
      */
@@ -91,6 +97,8 @@ class Import implements ActionInterface
     }
 
     /**
+     * What doing with existing element
+     *
      * @param string $action
      * @return $this
      */
@@ -101,7 +109,7 @@ class Import implements ActionInterface
     }
 
     /**
-     * @return $this
+     * @inheritdoc
      */
     public function execute()
     {
@@ -120,6 +128,8 @@ class Import implements ActionInterface
     }
 
     /**
+     * Read file
+     *
      * @throws ImportException
      */
     protected function read()
@@ -140,7 +150,7 @@ class Import implements ActionInterface
     }
 
     /**
-     *
+     * Direct import
      */
     protected function import()
     {

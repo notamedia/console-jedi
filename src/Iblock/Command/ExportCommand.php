@@ -12,6 +12,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Bitrix\Main\Loader;
 
+/**
+ * Command export information block(s) in xml file(s)
+ */
 class ExportCommand extends BitrixCommand
 {
     use MigrationCommandTrait;
