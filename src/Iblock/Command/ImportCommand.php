@@ -14,7 +14,7 @@ use Bitrix\Main\Loader;
 
 class ImportCommand extends BitrixCommand
 {
-    use CommandTrait;
+    use MigrationCommandTrait;
 
     /**
      * {@inheritdoc}

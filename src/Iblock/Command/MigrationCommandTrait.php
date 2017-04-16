@@ -9,45 +9,51 @@ use Bitrix\Iblock\TypeTable;
 use Bitrix\Iblock\IblockTable;
 
 /**
- * Class CommandTrait
- * @package Notamedia\ConsoleJedi\Iblock\Command
+ * Trait checks and sets import/export parameters information block
  */
-trait CommandTrait
+trait MigrationCommandTrait
 {
     /**
+     * Errors check parameters
      * @var array
      */
     protected $errors = [];
 
     /**
+     * Information block sites
      * @var array
      */
     protected $sites = [];
 
     /**
+     * Information block type
      * @var string
      */
     protected $type = '';
 
     /**
+     * Information blocks
      * @var array
      */
     protected $iblocks = [];
 
     /**
+     * Directory with file(s)
      * @var string
      */
     protected $dir;
 
     /**
+     * Extension file(s)
      * @var string
      */
     protected $extension = '.xml';
 
     /**
+     * Check argument directory and set $this->dir
      * @param InputInterface $input
      */
-    private function setDir(InputInterface $input)
+    protected function setDir(InputInterface $input)
     {
         $dir = $input->getArgument('dir');
 
@@ -65,9 +71,10 @@ trait CommandTrait
     }
 
     /**
+     * Check arguments type and code, set $this->iblocks
      * @param InputInterface $input
      */
-    private function setIblocks(InputInterface $input)
+    protected function setIblocks(InputInterface $input)
     {
         $iblocks = IblockTable::query()
             ->setFilter([
@@ -85,9 +92,10 @@ trait CommandTrait
     }
 
     /**
+     * Check argument type and set $this->type
      * @param InputInterface $input
      */
-    private function setType(InputInterface $input)
+    protected function setType(InputInterface $input)
     {
         $type = TypeTable::query()
             ->setFilter([
@@ -104,9 +112,10 @@ trait CommandTrait
     }
 
     /**
+     * Check argument sites and set $this->sites
      * @param InputInterface $input
      */
-    private function setSites(InputInterface $input)
+    protected function setSites(InputInterface $input)
     {
         $sites = SiteTable::query()
             ->setFilter([
