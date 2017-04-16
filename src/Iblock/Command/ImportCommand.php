@@ -27,12 +27,12 @@ class ImportCommand extends BitrixCommand
             ->addArgument(
                 'type',
                 InputArgument::REQUIRED,
-                'Information iblock type'
+                'Information block type'
             )
             ->addArgument(
                 'sites',
                 InputArgument::REQUIRED,
-                'Sites to which the information iblock will be bound (if it is to be created)'
+                'Sites to which the information block will be bound (if it is to be created)'
             )
             ->addArgument(
                 'dir',

@@ -27,12 +27,12 @@ class ExportCommand extends BitrixCommand
             ->addArgument(
                 'type',
                 InputArgument::REQUIRED,
-                'Information iblock type'
+                'Information block type'
             )
             ->addArgument(
                 'code',
                 InputArgument::REQUIRED,
-                'Information iblock code'
+                'Information block code'
             )
             ->addArgument(
                 'dir',
