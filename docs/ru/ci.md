@@ -15,7 +15,7 @@ composer install --no-dev --prefer-dist --no-interaction
 ./vendor/bin/jedi env:init prod --no-interaction
 ```
 
-Консольная команда `env:init`, в отличии от [остальных команд](command.md), имеет особый алгоритм выполнения, 
+Консольная команда `env:init`, в отличие от [остальных команд](command.md), имеет особый алгоритм выполнения, 
 заслуживающий отдельного объяснения:
 
 ![env:init](ci-env-init-command.jpg)
