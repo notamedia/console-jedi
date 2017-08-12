@@ -3,7 +3,6 @@
 namespace Notamedia\ConsoleJedi\Iblock;
 
 use Bitrix\Main\Loader;
-use Bitrix\Main\IO\Path;
 use Notamedia\ConsoleJedi\Iblock\Exception\ExportException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -101,13 +100,12 @@ class Exporter implements ActionInterface
      */
     public function execute()
     {
-        $absFilename = Path::convertSiteRelativeToAbsolute($this->config['path']);
-
+        $pathinfo = pathinfo($this->config['path']);
         $this->session = [
             "property_map" => false,
             "section_map" => false,
-            "work_dir" => pathinfo($absFilename, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR,
-            "file_dir" => pathinfo($this->config['path'], PATHINFO_FILENAME) . "_files" . DIRECTORY_SEPARATOR,
+            "work_dir" => $pathinfo['dirname'] . DIRECTORY_SEPARATOR,
+            "file_dir" => $pathinfo['filename'] . "_files" . DIRECTORY_SEPARATOR,
         ];
 
         $this->export();

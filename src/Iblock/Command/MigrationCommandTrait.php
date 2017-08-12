@@ -2,8 +2,9 @@
 
 namespace Notamedia\ConsoleJedi\Iblock\Command;
 
+use Notamedia\ConsoleJedi\Application\Application;
 use Symfony\Component\Console\Input\InputInterface;
-use Bitrix\Main\IO\Directory;
+use Symfony\Component\Filesystem\Filesystem;
 use Bitrix\Main\SiteTable;
 use Bitrix\Iblock\TypeTable;
 use Bitrix\Iblock\IblockTable;
@@ -62,16 +63,19 @@ trait MigrationCommandTrait
      */
     protected function setDir(InputInterface $input)
     {
+        $app = new Application();
+        $filesystem = new Filesystem();
         $dir = $input->getArgument('dir');
 
         if (!$dir) {
-            $dir = getcwd();
+            $dir = $app->getRoot();
+        } elseif (!$filesystem->isAbsolutePath($dir)) {
+            $dir = $app->getRoot() . DIRECTORY_SEPARATOR . $dir;
         }
-
         $dir = rtrim($dir, DIRECTORY_SEPARATOR);
 
-        if (!Directory::isDirectoryExists($dir) || !Directory::isDirectory($dir)) {
-            $this->errors[] = 'Directory not found';
+        if (!$filesystem->exists($dir)) {
+            $this->errors[] = "Directory $dir not found";
         }
 
         $this->dir = $dir;
