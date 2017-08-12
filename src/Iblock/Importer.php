@@ -9,7 +9,7 @@ use Notamedia\ConsoleJedi\Iblock\Exception\ImportException;
 /**
  * Import information block from xml file
  */
-class Importer implements ActionInterface
+class Importer implements MigrationInterface
 {
     /**
      * @var array

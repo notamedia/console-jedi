@@ -9,7 +9,7 @@ use Symfony\Component\Filesystem\Filesystem;
 /**
  * Export information block in xml file
  */
-class Exporter implements ActionInterface
+class Exporter implements MigrationInterface
 {
     /**
      * @var array
