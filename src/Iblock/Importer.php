@@ -40,6 +40,7 @@ class Importer implements ActionInterface
             'action_section' => 'A',
             'action_element' => 'A',
             'preview' => 'Y',
+            'detail' => 'Y',
             'interval' => 0
         ];
 
@@ -113,12 +114,10 @@ class Importer implements ActionInterface
      */
     public function execute()
     {
-        $absFilename = Path::convertSiteRelativeToAbsolute($this->config['path']);
-
         $this->session = [
             "section_map" => false,
             "prices_map" => false,
-            "work_dir" => pathinfo($absFilename, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR
+            "work_dir" => pathinfo($this->config['path'], PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR
         ];
 
         $this->read();
@@ -157,7 +156,7 @@ class Importer implements ActionInterface
             $this->session['work_dir'],
             true,
             $this->config["preview"],
-            false,
+            $this->config["detail"],
             true
         );
         $this->import->ImportMetaData([1, 2], $this->config["type"], $this->config["lids"]);
