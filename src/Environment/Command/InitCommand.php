@@ -32,6 +32,10 @@ use Symfony\Component\Filesystem\Filesystem;
 class InitCommand extends Command
 {
     /**
+     * @var string Code of the environment
+     */
+    protected $environmentCode;
+    /**
      * @var string Path to the environment directory.
      */
     protected $dir;
@@ -107,6 +111,7 @@ class InitCommand extends Command
             throw new \Exception('Environment path not found!');
         }
 
+        $this->environmentCode = $code;
         $this->dir = $dir . '/' . $environments[$code]['path'];
         $this->config = include $this->dir . '/config.php';
     }
@@ -353,5 +358,13 @@ class InitCommand extends Command
                 }
             }
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getEnvironmentCode()
+    {
+        return $this->environmentCode;
     }
 }
