@@ -77,7 +77,7 @@ trait AgentTrait
      * {
      *      // start a heavy (big) cycle
      *
-     *          $this->pingAgent(20, ['executeAgent => [$param1, $param2]]);
+     *          $this->pingAgent(20, ['executeAgent' => [$param1, $param2]]);
      *
      *      // end of cycle
      * }
@@ -119,7 +119,7 @@ trait AgentTrait
      * {
      *      // main logic
      *
-     *      return $this->getAgentName(['executeAgent => [$param1, $param2]]);
+     *      return $this->getAgentName(['executeAgent' => [$param1, $param2]]);
      * }
      * ```
      *
