@@ -32,10 +32,6 @@ use Symfony\Component\Filesystem\Filesystem;
 class InitCommand extends Command
 {
     /**
-     * @var string Code of the environment
-     */
-    protected $environmentCode;
-    /**
      * @var string Path to the environment directory.
      */
     protected $dir;
@@ -51,6 +47,10 @@ class InitCommand extends Command
      * @var array Files that do not need to copy to the application when initializing the environment settings.
      */
     protected $excludedFiles = ['config.php'];
+    /**
+     * @var string Type of the initialized environment.
+     */
+    private $type;
 
     /**
      * {@inheritdoc}
@@ -92,27 +92,27 @@ class InitCommand extends Command
         }
 
         if ($input->getArgument('type')) {
-            $code = $input->getArgument('type');
+            $type = $input->getArgument('type');
 
-            if (!isset($environments[$code])) {
+            if (!isset($environments[$type])) {
                 throw new \Exception('Invalid environment code!');
             }
         } else {
-            foreach ($environments as $code => $environment) {
-                $choices[$code] = $environment['name'];
+            foreach ($environments as $type => $environment) {
+                $choices[$type] = $environment['name'];
             }
 
             $questionHelper = $this->getHelper('question');
             $question = new ChoiceQuestion('<info>Which environment install?</info>', $choices, false);
-            $code = $questionHelper->ask($input, $output, $question);
+            $type = $questionHelper->ask($input, $output, $question);
         }
 
-        if (!isset($environments[$code]['path'])) {
+        if (!isset($environments[$type]['path'])) {
             throw new \Exception('Environment path not found!');
         }
 
-        $this->environmentCode = $code;
-        $this->dir = $dir . '/' . $environments[$code]['path'];
+        $this->type = $type;
+        $this->dir = $dir . '/' . $environments[$type]['path'];
         $this->config = include $this->dir . '/config.php';
     }
 
@@ -361,10 +361,12 @@ class InitCommand extends Command
     }
 
     /**
+     * Gets type of initialized environment.
+     * 
      * @return string
      */
-    public function getEnvironmentCode()
+    public function getType()
     {
-        return $this->environmentCode;
+        return $this->type;
     }
 }
