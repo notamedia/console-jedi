@@ -84,6 +84,14 @@ class Application extends \Symfony\Component\Console\Application
             $this->initializeBitrix();
         }
 
+        if (
+            $this->getConfiguration()
+            && isset($this->getConfiguration()['commandLoader'])
+            && ($this->getConfiguration()['commandLoader'] instanceof \Closure)
+        ) {
+            $this->setCommandLoader($this->getConfiguration()['commandLoader']());
+        }
+
         if ($this->getConfiguration()) {
             foreach ($this->getBitrixCommands() as $bitrixCommand) {
                 $this->add($bitrixCommand);
