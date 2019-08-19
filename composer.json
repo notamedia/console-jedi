@@ -1,6 +1,6 @@
 {
   "name": "notamedia/console-jedi",
-  "description": "Console application for CMS Bitrix",
+  "description": "Console application for Bitrix CMS",
   "keywords": [
     "bitrix",
     "console",
@@ -14,8 +14,8 @@
   },
   "require": {
     "php": ">=5.4",
-    "symfony/console": "~2.8|~3",
-    "symfony/filesystem": "~2.8|~3"
+    "symfony/console": "~4",
+    "symfony/filesystem": "~4"
   },
   "autoload": {
     "psr-4": {
